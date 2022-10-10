@@ -2,7 +2,7 @@
 This repo template will allow you to build ReVanced using Github Actions. This will helps people who don't want to setup build environments on their machines.
 
 ## Notes
-- The script will download the **selected compatible version**([see here](versions.json)) of Youtube on APKMirror, **NOT** latest official version on Google Play.
+- The script will download the **automatically selected compatible version** (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKMirror, **NOT** latest official version on Google Play.
 - Under **NO CIRCUMSTANCES** any APKs will be uploaded to this repository to avoid DMCA.
 
 ## How to setup
