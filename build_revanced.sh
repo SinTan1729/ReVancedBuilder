@@ -49,7 +49,7 @@ populate_patches() {
 
 # cleanup to fetch new revanced on next run
 if [[ "$1" == "clean" ]]; then
-    rm -f revanced-cli.jar revanced-integrations.apk revanced-patches.jar
+    rm -f revanced-cli.jar revanced-integrations.apk revanced-patches.jar patches.json
     exit
 fi
 

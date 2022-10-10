@@ -2,8 +2,8 @@
 
 declare -A apks
 
-apks["com.google.android.youtube.apk"]=dl_yt
-apks["com.google.android.apps.youtube.music.apk"]=dl_ytm
+apks["com.google.android.youtube"]=dl_yt
+apks["com.google.android.apps.youtube.music"]=dl_ytm
 
 ## Functions
 
@@ -86,7 +86,17 @@ dl_ytm() {
 for apk in "${!apks[@]}"; do
     if [ ! -f $apk ]; then
         echo "Downloading $apk"
-        version=$(jq -r ".\"$apk\"" <versions.json)
+		[ ! -f patches.json ] && req "https://raw.githubusercontent.com/revanced/revanced-patches/main/patches.json" patches.json
+		supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
+		version=0
+		for vers in $supported_vers; do
+			if [ $vers != "null" ]; then
+				if [[ ${vers//[!0-9]/} -gt ${version//[!0-9]/} ]]; then
+					version=$vers
+				fi
+			fi
+		done
+#        version=$(jq -r ".\"$apk\"" <versions.json)
         ${apks[$apk]}
     fi
 done
