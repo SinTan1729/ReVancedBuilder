@@ -44,13 +44,12 @@ dl_yt() {
 
 	echo "Choosing version '${last_ver}'"
 	local base_apk="com.google.android.youtube.apk"
-	if [ ! -f "$base_apk" ]; then
-		declare -r dl_url=$(dl_apk "https://www.apkmirror.com/apk/google-inc/youtube/youtube-${last_ver//./-}-release/" \
-			"APK</span>[^@]*@\([^#]*\)" \
-			"$base_apk")
-		echo "YouTube version: ${last_ver}"
-		echo "downloaded from: [APKMirror - YouTube]($dl_url)"
-	fi
+	declare -r dl_url=$(dl_apk "https://www.apkmirror.com/apk/google-inc/youtube/youtube-${last_ver//./-}-release/" \
+		"APK</span>[^@]*@\([^#]*\)" \
+		"$base_apk")
+	echo "YouTube version: ${last_ver}"
+	echo "downloaded from: [APKMirror - YouTube]($dl_url)"
+	jq ".\"$apk\" = \"$last_ver\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
 }
 
 # Architectures
@@ -67,36 +66,39 @@ dl_ytm() {
 
 	echo "Choosing version '${last_ver}'"
 	local base_apk="com.google.android.apps.youtube.music.apk"
-	if [ ! -f "$base_apk" ]; then
-		if [ "$arch" = "$ARM64_V8A" ]; then
-			local regexp_arch='arm64-v8a</div>[^@]*@\([^"]*\)'
-		elif [ "$arch" = "$ARM_V7A" ]; then
-			local regexp_arch='armeabi-v7a</div>[^@]*@\([^"]*\)'
-		fi
-		declare -r dl_url=$(dl_apk "https://www.apkmirror.com/apk/google-inc/youtube-music/youtube-music-${last_ver//./-}-release/" \
-			"$regexp_arch" \
-			"$base_apk")
-		echo "\nYouTube Music (${arch}) version: ${last_ver}"
-		echo "downloaded from: [APKMirror - YouTube Music ${arch}]($dl_url)"
+	if [ "$arch" = "$ARM64_V8A" ]; then
+		local regexp_arch='arm64-v8a</div>[^@]*@\([^"]*\)'
+	elif [ "$arch" = "$ARM_V7A" ]; then
+		local regexp_arch='armeabi-v7a</div>[^@]*@\([^"]*\)'
 	fi
+	declare -r dl_url=$(dl_apk "https://www.apkmirror.com/apk/google-inc/youtube-music/youtube-music-${last_ver//./-}-release/" \
+		"$regexp_arch" \
+		"$base_apk")
+	echo "\nYouTube Music (${arch}) version: ${last_ver}"
+	echo "downloaded from: [APKMirror - YouTube Music ${arch}]($dl_url)"
+	jq ".\"$apk\" = \"$last_ver\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
 }
+
+# Get into the build directory
+
+cd "/home/sintan/Downloads/Random/ReVanced/build/"
 
 ## Main
 
 for apk in "${!apks[@]}"; do
     if [ ! -f $apk ]; then
         echo "Downloading $apk"
-		[ ! -f patches.json ] && req "https://raw.githubusercontent.com/revanced/revanced-patches/main/patches.json" patches.json
+		req "https://raw.githubusercontent.com/revanced/revanced-patches/main/patches.json" patches.json
 		supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
 		version=0
 		for vers in $supported_vers; do
 			if [ $vers != "null" ]; then
-				if [[ $vers==0 || ${vers//[!0-9]/} -lt ${version//[!0-9]/} ]]; then
+				if [[ $version==0 || ${vers//[!0-9]/} -lt ${version//[!0-9]/} ]]; then
 					version=$vers
 				fi
 			fi
 		done
-#        version=$(jq -r ".\"$apk\"" <versions.json)
-        ${apks[$apk]}
+        version_present=$(jq -r ".\"$apk\"" versions.json)
+        [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} ]] && ${apks[$apk]} || echo "Recommended version of "$apk" already present"
     fi
 done

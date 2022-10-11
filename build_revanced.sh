@@ -1,7 +1,14 @@
 #!/bin/bash
 
+# Get timestamp
+timestamp=$(date '+%s')
+
 # File containing all patches
-patch_file=./patches.txt
+patch_file="./patches.txt"
+
+# Set working directory and current directory
+WDIR="/home/sintan/Downloads/Random/ReVanced/build/"
+ODIR="$PWD"
 
 # Get line numbers where included & excluded patches start from. 
 # We rely on the hardcoded messages to get the line numbers using grep
@@ -57,14 +64,35 @@ if [[ "$1" == "experimental" ]]; then
     EXPERIMENTAL="--experimental"
 fi
 
+# Set flag to determine if a build should happen or not
+flag=false
+
 # Fetch all the dependencies
 for artifact in "${!artifacts[@]}"; do
-    if [ ! -f "$artifact" ]; then
+    #Check for updates
+    cd "$WDIR"
+    name=$(echo "${artifacts[$artifact]}" | cut -d" " -f1)
+    [[ "$name" == "EFForg/apkeep" && ! -f ./apkeep ]] && curl -sLo "$artifact" $(get_artifact_download_url ${artifacts[$artifact]}) && break
+    version_present=$(jq -r ".\"$name\"" versions.json)
+    version=$(curl -s "https://api.github.com/repos/$name/releases/latest" | grep -Eo '"tag_name": "v(.*)"' | sed -E 's/.*"v([^"]+)".*/\1/')
+
+    if [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} ]]; then
         echo "Downloading $artifact"
         # shellcheck disable=SC2086,SC2046
         curl -sLo "$artifact" $(get_artifact_download_url ${artifacts[$artifact]})
+        jq ".\"$name\" = \"$version\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
+        flag=true
     fi
 done
+
+# Exit if no updates happened
+if [ ! $flag ]; then
+    echo `$date` "Nothing to update" | tee build.log
+    exit
+fi
+
+# Download required apk files
+./download_apkmirror.sh
 
 # Fetch microG
 chmod +x apkeep
@@ -76,6 +104,7 @@ if [ ! -f "vanced-microG.apk" ]; then
     echo "Downloading Vanced microG"
     ./apkeep -a com.mgoogle.android.gms@$VMG_VERSION .
     mv com.mgoogle.android.gms@$VMG_VERSION.apk vanced-microG.apk
+    jq ".\"vanced-microG\" = \"$VMG_VERSION\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
 fi
 
 # If the variables are NOT empty, call populate_patches with proper arguments
@@ -85,8 +114,6 @@ fi
 echo "************************************"
 echo "Building YouTube APK"
 echo "************************************"
-
-mkdir -p build
 
 if [ -f "com.google.android.youtube.apk" ]; then
 #    echo "Building Root APK"
@@ -98,7 +125,7 @@ if [ -f "com.google.android.youtube.apk" ]; then
     java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.youtube.apk -o build/revanced-nonroot.apk
+        -a com.google.android.youtube.apk -o ReVanced-nonroot-$timestamp.apk
 else
     echo "Cannot find YouTube APK, skipping build"
 fi
@@ -116,7 +143,17 @@ if [ -f "com.google.android.apps.youtube.music.apk" ]; then
     java -jar revanced-cli.jar -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.apps.youtube.music.apk -o build/revanced-music-nonroot.apk
+        -a com.google.android.apps.youtube.music.apk -o ReVanced-Music-nonroot-$timestamp.apk
 else
     echo "Cannot find YouTube Music APK, skipping build"
 fi
+
+# Send telegram message about the new build
+../telegram.sh -f ReVanced-nonroot-$timestamp.apk
+../telegram.sh -f ReVanced-Music-nonroot-$timestamp.apk
+cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" | sed "s/com.google.android.youtube/YouTube/" | ../telegram.sh -
+
+# Do some cleanup
+mkdir -p archive
+mv ReVanced*.apk archive/
+find archive/ -mtime +3 -exec rm {} \;
