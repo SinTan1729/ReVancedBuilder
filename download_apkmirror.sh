@@ -91,7 +91,7 @@ for apk in "${!apks[@]}"; do
 		version=0
 		for vers in $supported_vers; do
 			if [ $vers != "null" ]; then
-				if [[ ${vers//[!0-9]/} -gt ${version//[!0-9]/} ]]; then
+				if [[ $vers==0 || ${vers//[!0-9]/} -lt ${version//[!0-9]/} ]]; then
 					version=$vers
 				fi
 			fi
