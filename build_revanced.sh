@@ -69,7 +69,7 @@ flag=false
 
 # Get inside the working directory
 cd "$WDIR"
-echo "$(date) | Statring check..." | tee build.log
+echo "$(date) | Statring check..." | tee -a build.log
 
 # Fetch all the dependencies
 for artifact in "${!artifacts[@]}"; do
@@ -80,7 +80,7 @@ for artifact in "${!artifacts[@]}"; do
     version=$(curl -s "https://api.github.com/repos/$name/releases/latest" | grep -Eo '"tag_name": "v(.*)"' | sed -E 's/.*"v([^"]+)".*/\1/')
 
     if [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} ]]; then
-        echo "Downloading $artifact" | tee build.log
+        echo "Downloading $artifact" | tee -a build.log
         # shellcheck disable=SC2086,SC2046
         curl -sLo "$artifact" $(get_artifact_download_url ${artifacts[$artifact]})
         jq ".\"$name\" = \"$version\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
@@ -90,7 +90,7 @@ done
 
 # Exit if no updates happened
 if [ ! $flag ]; then
-    echo "Nothing to update" | tee build.log
+    echo "Nothing to update" | tee -a build.log
     exit
 fi
 
@@ -104,7 +104,7 @@ if [ ! -f "vanced-microG.apk" ]; then
     # Vanced microG 0.2.24.220220
     VMG_VERSION="0.2.24.220220"
 
-    echo "Downloading Vanced microG" | tee build.log
+    echo "Downloading Vanced microG" | tee -a build.log
     ./apkeep -a com.mgoogle.android.gms@$VMG_VERSION .
     mv com.mgoogle.android.gms@$VMG_VERSION.apk vanced-microG.apk
     jq ".\"vanced-microG\" = \"$VMG_VERSION\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
@@ -124,13 +124,13 @@ if [ -f "com.google.android.youtube.apk" ]; then
 #        -e microg-support ${patches[@]} \
 #        $EXPERIMENTAL \
 #        -a com.google.android.youtube.apk -o build/revanced-root.apk
-    echo "Building Non-root APK" | tee build.log
+    echo "Building Non-root APK" | tee -a build.log
     java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
         -a com.google.android.youtube.apk -o ReVanced-nonroot-$timestamp.apk
 else
-    echo "Cannot find YouTube APK, skipping build" | tee build.log
+    echo "Cannot find YouTube APK, skipping build" | tee -a build.log
 fi
 echo ""
 echo "************************************"
@@ -142,17 +142,17 @@ if [ -f "com.google.android.apps.youtube.music.apk" ]; then
 #        -e microg-support ${patches[@]} \
 #        $EXPERIMENTAL \
 #        -a com.google.android.apps.youtube.music.apk -o build/revanced-music-root.apk
-    echo "Building Non-root APK" | tee build.log
+    echo "Building Non-root APK" | tee -a build.log
     java -jar revanced-cli.jar -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
         -a com.google.android.apps.youtube.music.apk -o ReVanced-Music-nonroot-$timestamp.apk
 else
-    echo "Cannot find YouTube Music APK, skipping build" | tee build.log
+    echo "Cannot find YouTube Music APK, skipping build" | tee -a build.log
 fi
 
 # Send telegram message about the new build
-echo "Sending messages to telegram" | tee build.log
+echo "Sending messages to telegram" | tee -a build.log
 telegram-upload ReVanced-nonroot-$timestamp.apk ReVanced-Music-nonroot-$timestamp.apk --to "placeholder_for_channel_address" --caption ""
 echo "Build details:" > message.tmp
 cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" | sed "s/com.google.android.youtube/YouTube/" | sed "s/vanced-microG/Vanced microG/">> message.tmp
