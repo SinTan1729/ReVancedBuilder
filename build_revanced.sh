@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Use force to run the builds forcefully
+
 # Get timestamp
 timestamp=$(date '+%s')
 
@@ -7,7 +9,7 @@ timestamp=$(date '+%s')
 patch_file="./patches.txt"
 
 # Set working directory and current directory
-WDIR="/home/sintan/Downloads/Random/ReVanced/build/"
+WDIR="$1"
 ODIR="$PWD"
 
 # Get line numbers where included & excluded patches start from. 
@@ -89,13 +91,13 @@ for artifact in "${!artifacts[@]}"; do
 done
 
 # Exit if no updates happened
-if [ ! $flag ]; then
+if [[ $flag==false && "$1" != "force" ]]; then
     echo "Nothing to update" | tee -a build.log
     exit
 fi
 
 # Download required apk files
-$ODIR/download_apkmirror.sh
+$ODIR/download_apkmirror.sh "$WDIR"
 
 # Fetch microG
 chmod +x apkeep
@@ -128,7 +130,7 @@ if [ -f "com.google.android.youtube.apk" ]; then
     java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.youtube.apk -o ReVanced-nonroot-$timestamp.apk
+        -a com.google.android.youtube.apk -o revanced.apk
 else
     echo "Cannot find YouTube APK, skipping build" | tee -a build.log
 fi
@@ -146,16 +148,20 @@ if [ -f "com.google.android.apps.youtube.music.apk" ]; then
     java -jar revanced-cli.jar -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.apps.youtube.music.apk -o ReVanced-Music-nonroot-$timestamp.apk
+        -a com.google.android.apps.youtube.music.apk -o revanced-music.apk
 else
     echo "Cannot find YouTube Music APK, skipping build" | tee -a build.log
 fi
 
+# Rename files
+mv revanced.apk ReVanced-nonroot-$timestamp.apk
+mv revanced-music.apk ReVanced-Music-nonroot-$timestamp.apk
+
 # Send telegram message about the new build
 echo "Sending messages to telegram" | tee -a build.log
-telegram-upload ReVanced-nonroot-$timestamp.apk ReVanced-Music-nonroot-$timestamp.apk --to "placeholder_for_channel_address" --caption ""
+/home/sintan/.local/bin/telegram-upload ReVanced-nonroot-$timestamp.apk ReVanced-Music-nonroot-$timestamp.apk --to "placeholder_for_channel_address" --caption ""
 echo "Build details:" > message.tmp
-cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" | sed "s/com.google.android.youtube/YouTube/" | sed "s/vanced-microG/Vanced microG/">> message.tmp
+cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" | sed "s/com.google.android.youtube/YouTube/" | sed "s/vanced-microG/Vanced microG/" >> message.tmp
 cat message.tmp | ../telegram.sh -
 rm message.tmp
 

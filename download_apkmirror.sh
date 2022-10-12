@@ -81,7 +81,7 @@ dl_ytm() {
 
 # Get into the build directory
 
-cd "/home/sintan/Downloads/Random/ReVanced/build/"
+cd "$1"
 
 ## Main
 
