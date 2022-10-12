@@ -97,7 +97,7 @@ for artifact in "${!artifacts[@]}"; do
 done
 
 # Exit if no updates happened
-if [[ $flag==false && "$2" != "force" ]]; then
+if [[ $flag == false && "$2" != "force" ]]; then
     echo "Nothing to update" | tee -a build.log
     exit
 fi
