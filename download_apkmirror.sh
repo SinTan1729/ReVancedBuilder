@@ -104,6 +104,6 @@ for apk in "${!apks[@]}"; do
 			fi
 		done
         version_present=$(jq -r ".\"$apk\"" versions.json)
-        [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} ]] && ${apks[$apk]} || echo "Recommended version of "$apk" already present" | tee -a build.log
+        [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} ]] && ${apks[$apk]} || echo "Recommended version of "$apk" is already present" | tee -a build.log
     fi
 done
