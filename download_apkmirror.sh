@@ -81,7 +81,7 @@ dl_ytm() {
 
 # Get into the build directory
 
-if [ -z "$1" ]; then
+if [ -d "$1" ]; then
     cd "$1"
 else
     echo "Working directory not provided"

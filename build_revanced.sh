@@ -103,7 +103,7 @@ if [[ $flag == false && "$2" != "force" ]]; then
 fi
 
 # Download required apk files
-$ODIR/download_apkmirror.sh "$WDIR"
+/bin/bash "$ODIR/download_apkmirror.sh" "$WDIR"
 
 # Fetch microG
 chmod +x apkeep
