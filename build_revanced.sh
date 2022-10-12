@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Use force to run the builds forcefully
+# Run only one instance of this script at one time
+[ "${BKLOCKER}" != "running" ] && exec env BKLOCKER="running" flock -en "/tmp/revanced-builder.lock" "$0" "$@" || :
 
 # Get timestamp
 timestamp=$(date '+%s')
