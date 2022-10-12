@@ -137,7 +137,7 @@ if [ -f "com.google.android.youtube.apk" ]; then
     java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.youtube.apk -o revanced.apk
+        -a com.google.android.youtube.apk -o revanced-yt.apk
 else
     echo "Cannot find YouTube APK, skipping build" | tee -a build.log
 fi
@@ -155,14 +155,14 @@ if [ -f "com.google.android.apps.youtube.music.apk" ]; then
     java -jar revanced-cli.jar -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.apps.youtube.music.apk -o revanced-music.apk
+        -a com.google.android.apps.youtube.music.apk -o revanced-ytm.apk
 else
     echo "Cannot find YouTube Music APK, skipping build" | tee -a build.log
 fi
 
 # Rename files
-mv revanced.apk ReVanced-nonroot-$timestamp.apk
-mv revanced-music.apk ReVanced-Music-nonroot-$timestamp.apk
+mv revanced-yt.apk YouTube_ReVanced_nonroot_$timestamp.apk
+mv revanced-ytm.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk
 
 # Send telegram message about the new build
 echo "Sending messages to telegram" | tee -a build.log
@@ -177,5 +177,9 @@ msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed
 
 # Do some cleanup
 mkdir -p archive
-mv ReVanced*.apk archive/
-find archive/ -mtime +3 -exec rm {} \;
+mv YouTube_*.apk archive/
+find /srv/backups -maxdepth 1 -type f -printf '%Ts\t%P\n' \
+    | sort -rn \
+    | tail -n +6 \
+    | cut -f2- \
+    | xargs -r r
