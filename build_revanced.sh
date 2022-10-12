@@ -9,7 +9,13 @@ timestamp=$(date '+%s')
 patch_file="./patches.txt"
 
 # Set working directory and current directory
-WDIR="$1"
+if [ -d "$1" ]; then
+    WDIR="$1"
+else
+    echo "Working directory not provided"
+    exit -1
+fi
+
 ODIR="$PWD"
 
 # Get line numbers where included & excluded patches start from. 
@@ -57,12 +63,12 @@ populate_patches() {
 ## Main
 
 # cleanup to fetch new revanced on next run
-if [[ "$1" == "clean" ]]; then
+if [[ "$2" == "clean" ]]; then
     rm -f revanced-cli.jar revanced-integrations.apk revanced-patches.jar
     exit
 fi
 
-if [[ "$1" == "experimental" ]]; then
+if [[ "$2" == "experimental" ]]; then
     EXPERIMENTAL="--experimental"
 fi
 
@@ -91,7 +97,7 @@ for artifact in "${!artifacts[@]}"; do
 done
 
 # Exit if no updates happened
-if [[ $flag==false && "$1" != "force" ]]; then
+if [[ $flag==false && "$2" != "force" ]]; then
     echo "Nothing to update" | tee -a build.log
     exit
 fi
