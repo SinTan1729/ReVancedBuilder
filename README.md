@@ -2,7 +2,7 @@
 This repo template will allow one to build [ReVanced](https://github.com/revanced/) apps automatically. It uses [telegram.sh](https://github.com/fabianonline/telegram.sh) and [telegram-upload](https://github.com/Nekmo/telegram-upload) to messages. Make sure that `Java 17` is installed and selected as default.
 
 ## How to use
-Just run `./build_revanced <working-directory> (force/clean/experimental)`. Might be a good idea to set it up to run periodically using cron. I currently use the following in a user crontab:
+Just run `./build_revanced <working-directory> (force/clean/experimental)`. Might be a good idea to set it up to run periodically using cron. I currently use the following in a user crontab to run it everyday at 6 AM:
 ```
 0 6 * * * <full-script-location> <full-working-directory-location>
 ```
