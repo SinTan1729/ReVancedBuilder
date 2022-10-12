@@ -168,7 +168,7 @@ echo "Sending messages to telegram" | tee -a build.log
 /home/sintan/.local/bin/telegram-upload ReVanced-nonroot-$timestamp.apk ReVanced-Music-nonroot-$timestamp.apk --to "placeholder_for_channel_address" --caption ""
 echo "Build details:" > message.tmp
 cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" | sed "s/com.google.android.youtube/YouTube/" | sed "s/vanced-microG/Vanced microG/" >> message.tmp
-cat message.tmp | ../telegram.sh -
+cat message.tmp | ./telegram.sh -
 rm message.tmp
 
 # Do some cleanup
