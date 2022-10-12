@@ -1,5 +1,5 @@
 # Revanced Build
-This repo template will allow one to build ReVanced automatically. Set it up to run periodically using cron.
+This repo template will allow one to build [ReVanced](https://github.com/revanced/) apps automatically. Set it up to run periodically using cron. It uses [telegram.sh](https://github.com/fabianonline/telegram.sh) and [telegram-upload](https://github.com/Nekmo/telegram-upload) to messages.
 
 ## Notes
 - The script will download the **automatically selected compatible version** (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKMirror, **NOT** latest official version on Google Play.
