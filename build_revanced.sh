@@ -180,7 +180,7 @@ msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed
 # Do some cleanup
 mkdir -p archive
 mv YouTube_*.apk archive/
-find /srv/backups -maxdepth 1 -type f -printf '%Ts\t%P\n' \
+find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
     | sort -rn \
     | tail -n +6 \
     | cut -f2- \
