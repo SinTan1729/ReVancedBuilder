@@ -17,7 +17,9 @@ else
     exit -1
 fi
 
-ODIR="$PWD"
+# Make sure to work in the script directory
+SDIR="$(dirname -- "$( readlink -f -- "$0"; )";)"
+cd "$SDIR"
 
 # Get line numbers where included & excluded patches start from. 
 # We rely on the hardcoded messages to get the line numbers using grep
@@ -104,7 +106,7 @@ if [[ $flag == false && "$2" != "force" ]]; then
 fi
 
 # Download required apk files
-/bin/bash "$ODIR/download_apkmirror.sh" "$WDIR"
+"$SDIR/download_apkmirror.sh" "$WDIR"
 
 # Fetch microG
 chmod +x apkeep
