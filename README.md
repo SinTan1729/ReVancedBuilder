@@ -1,5 +1,5 @@
 # Revanced Build
-This repo template will allow one to build [ReVanced](https://github.com/revanced/) apps automatically. It uses [telegram.sh](https://github.com/fabianonline/telegram.sh) and [telegram-upload](https://github.com/Nekmo/telegram-upload) to messages. Make sure that `Java 17` is installed and selected as default.
+This repo template will allow one to build [ReVanced](https://github.com/revanced/) apps automatically and post it to a telegram channel to access and possibly share the builds with friends. It uses [telegram.sh](https://github.com/fabianonline/telegram.sh) and [telegram-upload](https://github.com/Nekmo/telegram-upload) to messages. Make sure that `Java 17` is installed and selected as default.
 
 ## How to use
 Just run `./build_revanced <working-directory> (force/clean/experimental)`. Might be a good idea to set it up to run periodically using cron. I currently use the following in a user crontab to run it everyday at 6 AM:
@@ -10,6 +10,8 @@ Just run `./build_revanced <working-directory> (force/clean/experimental)`. Migh
 ## Notes
 - The script will download the **automatically selected compatible version** (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKMirror, **NOT** latest official version on Google Play.
 - Under **NO CIRCUMSTANCES** any APKs will be uploaded to this repository to avoid DMCA.
+- The script assumes that the working directory has the `telegram.sh` script along with a working config file, and `telegram-upload` installed and working. For their config, look at the links provided on top.
+- In the current configuration, the script only builds YouTube ReVanced and YouTube Music ReVanced (both nonroot), but it's easy to add support for any other ReVanced app. The code for root builds is included but commented out.
 
 ## Customize your build
 If you wish to continue with the default settings, you may skip this step.

@@ -134,12 +134,12 @@ if [ -f "com.google.android.youtube.apk" ]; then
 #    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
 #        -e microg-support ${patches[@]} \
 #        $EXPERIMENTAL \
-#        -a com.google.android.youtube.apk -o build/revanced-root.apk
+#        -a com.google.android.youtube.apk -o build/revanced-yt-root.apk
     echo "Building Non-root APK" | tee -a build.log
     java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.youtube.apk -o revanced-yt.apk
+        -a com.google.android.youtube.apk -o revanced-yt-nonroot.apk
 else
     echo "Cannot find YouTube APK, skipping build" | tee -a build.log
 fi
@@ -152,25 +152,27 @@ if [ -f "com.google.android.apps.youtube.music.apk" ]; then
 #    java -jar revanced-cli.jar -b revanced-patches.jar --mount \
 #        -e microg-support ${patches[@]} \
 #        $EXPERIMENTAL \
-#        -a com.google.android.apps.youtube.music.apk -o build/revanced-music-root.apk
+#        -a com.google.android.apps.youtube.music.apk -o build/revanced-ytm-root.apk
     echo "Building Non-root APK" | tee -a build.log
     java -jar revanced-cli.jar -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
-        -a com.google.android.apps.youtube.music.apk -o revanced-ytm.apk
+        -a com.google.android.apps.youtube.music.apk -o revanced-ytm-nonroot.apk
 else
     echo "Cannot find YouTube Music APK, skipping build" | tee -a build.log
 fi
 
 # Rename files
-mv revanced-yt.apk YouTube_ReVanced_nonroot_$timestamp.apk
-mv revanced-ytm.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk
+mv revanced-yt-nonroot.apk YouTube_ReVanced_nonroot_$timestamp.apk
+mv revanced-ytm-nonroot.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk
+# mv revanced-yt-root.apk YouTube_ReVanced_root_$timestamp.apk
+# mv revanced-ytm-root.apk YouTube_Music_ReVanced_root_$timestamp.apk
 
 # Send telegram message about the new build
 echo "Sending messages to telegram" | tee -a build.log
 
 # telegram-upload uses personal account, hence bypassing 50 MB max upload limit of bots
-/home/sintan/.local/bin/telegram-upload ReVanced-nonroot-$timestamp.apk ReVanced-Music-nonroot-$timestamp.apk --to "placeholder_for_channel_address" --caption ""
+/home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "placeholder_for_channel_address" --caption ""
 
 # telegram.sh uses bot account, but it supports formatted messages
 msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" \
@@ -179,7 +181,8 @@ msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed
 
 # Do some cleanup
 mkdir -p archive
-mv YouTube_*.apk archive/
+mv YouTube_ReVanced_nonroot_$timestamp.apk archive/
+mv YouTube_Music_ReVanced_nonroot_$timestamp.apk archive/
 find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
     | sort -rn \
     | tail -n +6 \
