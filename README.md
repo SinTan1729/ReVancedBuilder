@@ -1,4 +1,4 @@
-# Revanced Build
+# Revanced Builder
 This repo will allow one to build [ReVanced](https://github.com/revanced/) apps automatically and post it to a telegram channel to access and possibly share the builds with friends. It uses [telegram.sh](https://github.com/fabianonline/telegram.sh) to send messages and [telegram-upload](https://github.com/Nekmo/telegram-upload) to upload files. Make sure that `Java >=17` is installed and selected as default.
 
 ## How to use
