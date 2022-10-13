@@ -112,6 +112,8 @@ for artifact in $artifacts; do
     fi
 done
 
+[[ ! -f com.google.android.youtube.apk || ! -f com.google.android.apps.youtube.music.apk ]] && flag=true
+
 # Exit if no updates happened
 if [[ $flag == false && "$2" != "force" ]]; then
     echo "Nothing to update" | tee -a build.log
