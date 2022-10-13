@@ -91,18 +91,12 @@ fi
 ## Main
 curl -X 'GET' 'https://releases.rvcd.win/patches' -H 'accept: application/json' -o patches.json
 for apk in "${!apks[@]}"; do
-    if [ ! -f $apk ]; then
-        echo "Downloading $apk" | tee -a build.log
-		supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
-		version=0
-		for vers in $supported_vers; do
-			if [ $vers != "null" ]; then
-				if [[ $version==0 || ${vers//[!0-9]/} -lt ${version//[!0-9]/} ]]; then
-					version=$vers
-				fi
-			fi
-		done
-        version_present=$(jq -r ".\"$apk\"" versions.json)
-        [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} ]] && ${apks[$apk]} || echo "Recommended version of "$apk" is already present" | tee -a build.log
-    fi
+	echo "Downloading $apk" | tee -a build.log
+	supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
+	version=0
+	for vers in $supported_vers; do
+		[ $vers != "null" ] && [[ $version==0 || ${vers//[!0-9]/} -lt ${version//[!0-9]/} ]] && version=$vers
+	done
+	version_present=$(jq -r ".\"$apk\"" versions.json)
+	[[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} || ! -f $apk.apk ]] && ${apks[$apk]} || echo "Recommended version of "$apk" is already present" | tee -a build.log
 done
