@@ -25,6 +25,13 @@ req() { wget -nv -O "$2" --header="$WGET_HEADER" "$1"; }
 # 	if [[ $max = 0 ]]; then echo ""; else echo "$max"; fi
 # }
 
+# Returns if $1 is less than $2
+ver_less_than() {
+    [ ${1:0:1} == "v" ] && var1=${1:1} || var1=$1
+    [ ${2:0:1} == "v" ] && var2=${2:1} || var2=$2
+    [ $(echo $var1$'\n'$var2 | sort -V | tail -n1) != $var1 ] && echo true || echo false
+}
+
 # Wget download apk
 dl_apk() {
 	local url=$1 regexp=$2 output=$3
@@ -95,8 +102,8 @@ for apk in "${!apks[@]}"; do
 	supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
 	version=0
 	for vers in $supported_vers; do
-		[ $vers != "null" ] && [[ $version==0 || ${vers//[!0-9]/} -lt ${version//[!0-9]/} ]] && version=$vers
+		[ $vers != "null" ] && [[ $(ver_less_than $vers $version) == true || $version == 0 ]] && version=$vers
 	done
 	version_present=$(jq -r ".\"$apk\"" versions.json)
-	[[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} || ! -f $apk.apk ]] && ${apks[$apk]} || echo "Recommended version of "$apk" is already present" | tee -a build.log
+	[[ $(ver_less_than $version_present $version) == true || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version of "$apk" is already present" | tee -a build.log
 done

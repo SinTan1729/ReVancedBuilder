@@ -17,6 +17,13 @@ else
     exit -1
 fi
 
+# Returns if $1 is less than $2
+ver_less_than() {
+    [ ${1:0:1} == "v" ] && var1=${1:1} || var1=$1
+    [ ${2:0:1} == "v" ] && var2=${2:1} || var2=$2
+    [ $(echo $var1$'\n'$var2 | sort -V | tail -n1) != $var1 ] && echo true || echo false
+}
+
 # Make sure to work in the script directory
 SDIR="$(dirname -- "$( readlink -f -- "$0"; )";)"
 cd "$SDIR"
@@ -95,9 +102,9 @@ for artifact in $artifacts; do
     version_present=$(jq -r ".\"$basename\"" versions.json)
     data=$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)
     version=$(echo "$data" | jq -r '.version')
-    if [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} || ! -f $name ]]; then
+    if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
         echo "Downloading $name" | tee -a build.log
-        [[ $name == microg.apk && -f $name ]] && microg_updated=true
+        [[ $name == microg.apk && -f $name && $2 != force ]] && microg_updated=true
         # shellcheck disable=SC2086,SC2046
         curl -sLo "$name" "$(echo "$data" | jq -r '.browser_download_url')"
         jq ".\"$basename\" = \"$version\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
@@ -112,7 +119,7 @@ if [[ $flag == false && "$2" != "force" ]]; then
 fi
 
 # Download required apk files
-"$SDIR/download_apkmirror.sh" "$WDIR"
+"$SDIR/download_apkmirror.sh" "$WDIR" $2
 
 # # Fetch microG
 # chmod +x apkeep
@@ -155,12 +162,12 @@ echo "Building YouTube Music APK"
 echo "************************************"
 if [ -f "com.google.android.apps.youtube.music.apk" ]; then
 #    echo "Building Root APK"
-#    java -jar revanced-cli.jar -b revanced-patches.jar --mount \
+#    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
 #        -e microg-support ${patches[@]} \
 #        $EXPERIMENTAL \
 #        -a com.google.android.apps.youtube.music.apk -o build/revanced-ytm-root.apk
     echo "Building Non-root APK" | tee -a build.log
-    java -jar revanced-cli.jar -b revanced-patches.jar \
+    java -jar revanced-cli.jar -m revanced-integrations.apk  -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
         -a com.google.android.apps.youtube.music.apk -o revanced-ytm-nonroot.apk
