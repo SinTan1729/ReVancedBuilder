@@ -36,24 +36,27 @@ included_patches="$(tail -n +$included_start $patch_file | grep '^[^#[:blank:]]'
 # Array for storing patches
 declare -a patches
 
-# Artifacts associative array aka dictionary
-declare -A artifacts
+# # Artifacts associative array aka dictionary
+# declare -A artifacts
 
-artifacts["revanced-cli.jar"]="revanced/revanced-cli revanced-cli .jar"
-artifacts["revanced-integrations.apk"]="revanced/revanced-integrations app-release-unsigned .apk"
-artifacts["revanced-patches.jar"]="revanced/revanced-patches revanced-patches .jar"
-artifacts["apkeep"]="EFForg/apkeep apkeep-x86_64-unknown-linux-gnu"
+# artifacts["revanced-cli.jar"]="revanced/revanced-cli revanced-cli .jar"
+# artifacts["revanced-integrations.apk"]="revanced/revanced-integrations app-release-unsigned .apk"
+# artifacts["revanced-patches.jar"]="revanced/revanced-patches revanced-patches .jar"
+# artifacts["apkeep"]="EFForg/apkeep apkeep-x86_64-unknown-linux-gnu"
+
+# Required artifacts in the format repository-name_filename
+artifacts="revanced/revanced-cli_revanced-cli.jar revanced/revanced-integrations_revanced-integrations.apk revanced/revanced-patches_revanced-patches.jar TeamVanced/VancedMicroG_microg.apk"
 
 ## Functions
 
-get_artifact_download_url() {
-    # Usage: get_download_url <repo_name> <artifact_name> <file_type>
-    local api_url result
-    api_url="https://api.github.com/repos/$1/releases/latest"
-    # shellcheck disable=SC2086
-    result=$(curl -s $api_url | jq ".assets[] | select(.name | contains(\"$2\") and contains(\"$3\") and (contains(\".sig\") | not)) | .browser_download_url")
-    echo "${result:1:-1}"
-}
+# get_artifact_download_url() {
+#     # Usage: get_download_url <repo_name> <artifact_name> <file_type>
+#     local api_url result
+#     api_url="https://api.github.com/repos/$1/releases/latest"
+#     # shellcheck disable=SC2086
+#     result=$(curl -s $api_url | jq ".assets[] | select(.name | contains(\"$2\") and contains(\"$3\") and (contains(\".sig\") | not)) | .browser_download_url")
+#     echo "${result:1:-1}"
+# }
 
 # Function for populating patches array, using a function here reduces redundancy & satisfies DRY principals
 populate_patches() {
@@ -83,18 +86,21 @@ cd "$WDIR"
 echo "$(date) | Statring check..." | tee -a build.log
 
 # Fetch all the dependencies
-for artifact in "${!artifacts[@]}"; do
+curl -X 'GET' 'https://releases.rvcd.win/tools' -H 'accept: application/json' | sed 's:\\\/:\/:g' > latest_versions.json
+for artifact in $artifacts; do
     #Check for updates
-    name=$(echo "${artifacts[$artifact]}" | cut -d" " -f1)
-    [[ "$name" == "EFForg/apkeep" && ! -f ./apkeep ]] && curl -sLo "$artifact" $(get_artifact_download_url ${artifacts[$artifact]}) && break
-    version_present=$(jq -r ".\"$name\"" versions.json)
-    version=$(curl -s "https://api.github.com/repos/$name/releases/latest" | grep -Eo '"tag_name": "v(.*)"' | sed -E 's/.*"v([^"]+)".*/\1/')
-
-    if [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} ]]; then
-        echo "Downloading $artifact" | tee -a build.log
+    repo=$(echo $artifact | cut -d '_' -f1)
+    name=$(echo $artifact | cut -d '_' -f2)
+    basename=$(echo $name | cut -d '.' -f1)
+    version_present=$(jq -r ".\"$basename\"" versions.json)
+    data=$(jq -r ".tools[] | select(.repository == \"$repo\") | select(.content_type | contains(\"archive\"))" latest_versions.json)
+    version=$(echo "$data" | jq -r '.version')
+    if [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} || ! -f $name ]]; then
+        echo "Downloading $name" | tee -a build.log
+        [[ $name == microg.apk && -f $name ]] && microg_updated=true
         # shellcheck disable=SC2086,SC2046
-        curl -sLo "$artifact" $(get_artifact_download_url ${artifacts[$artifact]})
-        jq ".\"$name\" = \"$version\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
+        curl -sLo "$name" "$(echo "$data" | jq -r '.browser_download_url')"
+        jq ".\"$basename\" = \"$version\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
         flag=true
     fi
 done
@@ -108,18 +114,18 @@ fi
 # Download required apk files
 "$SDIR/download_apkmirror.sh" "$WDIR"
 
-# Fetch microG
-chmod +x apkeep
+# # Fetch microG
+# chmod +x apkeep
 
-if [ ! -f "vanced-microG.apk" ]; then
-    # Vanced microG 0.2.24.220220
-    VMG_VERSION="0.2.24.220220"
+# if [ ! -f "vanced-microG.apk" ]; then
+#     # Vanced microG 0.2.24.220220
+#     VMG_VERSION="0.2.24.220220"
 
-    echo "Downloading Vanced microG" | tee -a build.log
-    ./apkeep -a com.mgoogle.android.gms@$VMG_VERSION .
-    mv com.mgoogle.android.gms@$VMG_VERSION.apk vanced-microG.apk
-    jq ".\"vanced-microG\" = \"$VMG_VERSION\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
-fi
+#     echo "Downloading Vanced microG" | tee -a build.log
+#     ./apkeep -a com.mgoogle.android.gms@$VMG_VERSION .
+#     mv com.mgoogle.android.gms@$VMG_VERSION.apk vanced-microG.apk
+#     jq ".\"vanced-microG\" = \"$VMG_VERSION\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
+# fi
 
 # If the variables are NOT empty, call populate_patches with proper arguments
 [[ ! -z "$excluded_patches" ]] && populate_patches "-e" "$excluded_patches"
@@ -177,8 +183,10 @@ telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_n
 
 # telegram.sh uses bot account, but it supports formatted messages
 msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" \
-        | sed "s/com.google.android.youtube/YouTube/" | sed "s/vanced-microG/Vanced microG/" | sed "s/revanced\///g" | awk 1 ORS=$'\n')
+        | sed "s/com.google.android.youtube/YouTube/" | sed "s/microg/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" \
+        | sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
 ./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+[ $microg_updated ] && ./telegram.sh -M "_An update of microg was published. Please download it from the link in the pinned message._"
 
 # Do some cleanup, keep only the last 3 build's worth of files
 mkdir -p archive

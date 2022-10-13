@@ -13,17 +13,17 @@ WGET_HEADER="User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/2010010
 # Wget function
 req() { wget -nv -O "$2" --header="$WGET_HEADER" "$1"; }
 
-# Wget apk verions
-get_apk_vers() { req "$1" - | sed -n 's;.*Version:</span><span class="infoSlide-value">\(.*\) </span>.*;\1;p'; }
+# # Wget apk verions
+# get_apk_vers() { req "$1" - | sed -n 's;.*Version:</span><span class="infoSlide-value">\(.*\) </span>.*;\1;p'; }
 
-# Wget apk verions(largest)
-get_largest_ver() {
-	local max=0
-	while read -r v || [ -n "$v" ]; do
-		if [[ ${v//[!0-9]/} -gt ${max//[!0-9]/} ]]; then max=$v; fi
-	done
-	if [[ $max = 0 ]]; then echo ""; else echo "$max"; fi
-}
+# # Wget apk verions(largest)
+# get_largest_ver() {
+# 	local max=0
+# 	while read -r v || [ -n "$v" ]; do
+# 		if [[ ${v//[!0-9]/} -gt ${max//[!0-9]/} ]]; then max=$v; fi
+# 	done
+# 	if [[ $max = 0 ]]; then echo ""; else echo "$max"; fi
+# }
 
 # Wget download apk
 dl_apk() {
@@ -40,7 +40,7 @@ dl_yt() {
 	echo "Downloading YouTube" | tee -a build.log
 	local last_ver
 	last_ver="$version"
-	last_ver="${last_ver:-$(get_apk_vers "https://www.apkmirror.com/uploads/?appcategory=youtube" | get_largest_ver)}"
+	# last_ver="${last_ver:-$(get_apk_vers "https://www.apkmirror.com/uploads/?appcategory=youtube" | get_largest_ver)}"
 
 	echo "Choosing version '${last_ver}'" | tee -a build.log
 	local base_apk="com.google.android.youtube.apk"
@@ -62,7 +62,7 @@ dl_ytm() {
 	echo "Downloading YouTube Music (${arch})" | tee -a build.log
 	local last_ver
 	last_ver="$version"
-	last_ver="${last_ver:-$(get_apk_vers "https://www.apkmirror.com/uploads/?appcategory=youtube-music" | get_largest_ver)}"
+	# last_ver="${last_ver:-$(get_apk_vers "https://www.apkmirror.com/uploads/?appcategory=youtube-music" | get_largest_ver)}"
 
 	echo "Choosing version '${last_ver}'" | tee -a build.log
 	local base_apk="com.google.android.apps.youtube.music.apk"
@@ -89,7 +89,7 @@ else
 fi
 
 ## Main
-req "https://raw.githubusercontent.com/revanced/revanced-patches/main/patches.json" patches.json
+curl -X 'GET' 'https://releases.rvcd.win/patches' -H 'accept: application/json' -o patches.json
 for apk in "${!apks[@]}"; do
     if [ ! -f $apk ]; then
         echo "Downloading $apk" | tee -a build.log
