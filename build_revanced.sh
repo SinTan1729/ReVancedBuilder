@@ -180,7 +180,7 @@ msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed
         | sed "s/com.google.android.youtube/YouTube/" | sed "s/vanced-microG/Vanced microG/" | sed "s/revanced\///g" | awk 1 ORS=$'\n')
 ./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
 
-# Do some cleanup
+# Do some cleanup, keep only the last 3 build's worth of files
 mkdir -p archive
 mv YouTube_ReVanced_nonroot_$timestamp.apk archive/
 mv YouTube_Music_ReVanced_nonroot_$timestamp.apk archive/
