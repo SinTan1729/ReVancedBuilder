@@ -93,7 +93,7 @@ for artifact in $artifacts; do
     name=$(echo $artifact | cut -d '_' -f2)
     basename=$(echo $name | cut -d '.' -f1)
     version_present=$(jq -r ".\"$basename\"" versions.json)
-    data=$(jq -r ".tools[] | select(.repository == \"$repo\") | select(.content_type | contains(\"archive\"))" latest_versions.json)
+    data=$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)
     version=$(echo "$data" | jq -r '.version')
     if [[ ${version_present//[!0-9]/} -lt ${version//[!0-9]/} || ! -f $name ]]; then
         echo "Downloading $name" | tee -a build.log
