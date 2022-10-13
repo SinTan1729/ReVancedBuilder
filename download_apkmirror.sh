@@ -89,11 +89,10 @@ else
 fi
 
 ## Main
-
+req "https://raw.githubusercontent.com/revanced/revanced-patches/main/patches.json" patches.json
 for apk in "${!apks[@]}"; do
     if [ ! -f $apk ]; then
         echo "Downloading $apk" | tee -a build.log
-		req "https://raw.githubusercontent.com/revanced/revanced-patches/main/patches.json" patches.json
 		supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
 		version=0
 		for vers in $supported_vers; do
