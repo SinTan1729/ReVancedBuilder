@@ -173,7 +173,7 @@ echo "Sending messages to telegram" | tee -a build.log
 
 # telegram-upload uses personal account, hence bypassing 50 MB max upload limit of bots
 channel_address=$(cat channel_address | sed -z '$ s/\n$//')
-/home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$channel_address" --caption ""
+telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$channel_address" --caption ""
 
 # telegram.sh uses bot account, but it supports formatted messages
 msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" \
