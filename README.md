@@ -2,7 +2,7 @@
 This repo will allow one to build [ReVanced](https://github.com/revanced/) apps automatically and post it to a telegram channel to access and possibly share the builds with friends. It uses [telegram.sh](https://github.com/fabianonline/telegram.sh) to send messages and [telegram-upload](https://github.com/Nekmo/telegram-upload) to upload files. Make sure that `Java >=17` is installed and selected as default.
 
 ## How to use
-Just run `./build_revanced <working-directory> (force/clean/experimental)`. Might be a good idea to set it up to run periodically using cron. I currently use the following in a user crontab to run it everyday at 6 AM:
+Just run `./build_revanced <working-directory> (force/clean/experimental/checkonly)`. Might be a good idea to set it up to run periodically using cron. I currently use the following in a user crontab to run it everyday at 6 AM:
 ```
 0 6 * * * <full-script-location> <full-working-directory-location>
 ```

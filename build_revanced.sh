@@ -103,6 +103,10 @@ for artifact in $artifacts; do
     data=$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)
     version=$(echo "$data" | jq -r '.version')
     if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
+        if [[ $2 == checkonly ]]; then
+            echo \[checkonly\] $name has an update \($version_present \-\> $version\) | tee -a build.log
+            continue
+        fi
         echo "Downloading $name" | tee -a build.log
         [[ $name == microg.apk && -f $name && $2 != force ]] && microg_updated=true
         # shellcheck disable=SC2086,SC2046
@@ -115,8 +119,12 @@ done
 [[ ! -f com.google.android.youtube.apk || ! -f com.google.android.apps.youtube.music.apk ]] && flag=true
 
 # Exit if no updates happened
-if [[ $flag == false && "$2" != "force" ]]; then
-    echo "Nothing to update" | tee -a build.log
+if [[ $flag == false && $2 != force ]]; then
+    if [[ $2 != checkonly ]]; then
+        echo "Nothing to update" | tee -a build.log
+    else
+        echo "Check-only run complete!" | tee -a build.log
+    fi
     exit
 fi
 
