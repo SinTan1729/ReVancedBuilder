@@ -91,7 +91,7 @@ check_flag=false
 
 # Get inside the working directory
 cd "$WDIR"
-echo "$(date) | Statring check..." | tee -a build.log
+echo "$(date) | Starting check..." | tee -a build.log
 
 # Fetch all the dependencies
 curl -X 'GET' 'https://releases.rvcd.win/tools' -H 'accept: application/json' | sed 's:\\\/:\/:g' > latest_versions.json
