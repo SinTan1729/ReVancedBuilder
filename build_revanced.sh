@@ -128,6 +128,7 @@ if [[ $flag == false && $2 != force ]]; then
     else
         "$SDIR/download_apkmirror.sh" "$WDIR" checkonly
     fi
+    echo "--------------------"$'\n'"--------------------" | tee -a build.log
     exit
 fi
 
