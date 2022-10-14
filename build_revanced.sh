@@ -52,7 +52,7 @@ declare -a patches
 # artifacts["apkeep"]="EFForg/apkeep apkeep-x86_64-unknown-linux-gnu"
 
 # Required artifacts in the format repository-name_filename
-artifacts="revanced/revanced-cli_revanced-cli.jar revanced/revanced-integrations_revanced-integrations.apk revanced/revanced-patches_revanced-patches.jar TeamVanced/VancedMicroG_microg.apk"
+artifacts="revanced/revanced-cli:revanced-cli.jar revanced/revanced-integrations:revanced-integrations.apk revanced/revanced-patches:revanced-patches.jar TeamVanced/VancedMicroG:microg.apk"
 
 ## Functions
 
@@ -97,12 +97,12 @@ echo "$(date) | Starting check..." | tee -a build.log
 curl -X 'GET' 'https://releases.rvcd.win/tools' -H 'accept: application/json' | sed 's:\\\/:\/:g' > latest_versions.json
 for artifact in $artifacts; do
     #Check for updates
-    repo=$(echo $artifact | cut -d '_' -f1)
-    name=$(echo $artifact | cut -d '_' -f2)
-    basename=$(echo $name | cut -d '.' -f1)
+    repo=$(echo $artifact | cut -d ':' -f1)
+    name=$(echo $artifact | cut -d ':' -f2)
+    basename=$(echo $repo | cut -d '/' -f2)
     echo "Checking $basename" | tee -a build.log
     version_present=$(jq -r ".\"$basename\"" versions.json)
-    data=$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)
+    data="$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)"
     version=$(echo "$data" | jq -r '.version')
     if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
         if [[ $2 == checkonly ]]; then
