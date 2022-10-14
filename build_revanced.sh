@@ -100,7 +100,7 @@ for artifact in $artifacts; do
     repo=$(echo $artifact | cut -d '_' -f1)
     name=$(echo $artifact | cut -d '_' -f2)
     basename=$(echo $name | cut -d '.' -f1)
-    echo "Checking $basename" | tee build.log
+    echo "Checking $basename" | tee -a build.log
     version_present=$(jq -r ".\"$basename\"" versions.json)
     data=$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)
     version=$(echo "$data" | jq -r '.version')
