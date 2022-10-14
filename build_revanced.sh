@@ -87,6 +87,7 @@ fi
 
 # Set flag to determine if a build should happen or not
 flag=false
+check_flag=false
 
 # Get inside the working directory
 cd "$WDIR"
@@ -99,12 +100,14 @@ for artifact in $artifacts; do
     repo=$(echo $artifact | cut -d '_' -f1)
     name=$(echo $artifact | cut -d '_' -f2)
     basename=$(echo $name | cut -d '.' -f1)
+    echo "Checking $basename" | tee build.log
     version_present=$(jq -r ".\"$basename\"" versions.json)
     data=$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)
     version=$(echo "$data" | jq -r '.version')
     if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
         if [[ $2 == checkonly ]]; then
-            echo \[checkonly\] $name has an update \($version_present \-\> $version\) | tee -a build.log
+            echo "[checkonly] $basename has an update ($version_present -> $version)" | tee -a build.log
+            check_flag=true
             continue
         fi
         echo "Downloading $name" | tee -a build.log
@@ -120,10 +123,10 @@ done
 
 # Exit if no updates happened
 if [[ $flag == false && $2 != force ]]; then
-    if [[ $2 != checkonly ]]; then
+    if [[ $check_flag == false ]]; then
         echo "Nothing to update" | tee -a build.log
     else
-        echo "Check-only run complete!" | tee -a build.log
+        "$SDIR/download_apkmirror.sh" "$WDIR" checkonly
     fi
     exit
 fi

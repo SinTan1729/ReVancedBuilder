@@ -44,6 +44,10 @@ dl_apk() {
 
 # Downloading youtube
 dl_yt() {
+	if [[ $2 == checkonly ]]; then
+		echo "[checkonly] YouTube Music has an update ($version_present -> $version)" | tee -a build.log
+		break
+	fi
 	echo "Downloading YouTube" | tee -a build.log
 	local last_ver
 	last_ver="$version"
@@ -65,6 +69,10 @@ ARM_V7A="arm-v7a"
 
 # Downloading youtube music
 dl_ytm() {
+	if [[ $2 == checkonly ]]; then
+		echo "[checkonly] YouTube Music has an update ($version_present -> $version)" | tee -a build.log
+		break
+	fi
 	local arch=$ARM64_V8A
 	echo "Downloading YouTube Music (${arch})" | tee -a build.log
 	local last_ver
@@ -98,7 +106,7 @@ fi
 ## Main
 curl -X 'GET' 'https://releases.rvcd.win/patches' -H 'accept: application/json' -o patches.json
 for apk in "${!apks[@]}"; do
-	echo "Downloading $apk" | tee -a build.log
+	echo "Checking $apk" | tee -a build.log
 	supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
 	version=0
 	for vers in $supported_vers; do
