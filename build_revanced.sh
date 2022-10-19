@@ -217,4 +217,4 @@ find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
     | sort -rn \
     | tail -n +6 \
     | cut -f2- \
-    | xargs -r -I {} rm {} \;
+    | xargs -r -I {} rm {}
