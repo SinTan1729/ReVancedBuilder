@@ -204,7 +204,7 @@ telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_n
 
 # telegram.sh uses bot account, but it supports formatted messages
 msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" \
-        | sed "s/com.google.android.youtube/YouTube/" | sed "s/microg/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" \
+        | sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" \
         | sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
 ./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
 [ $microg_updated ] && ./telegram.sh -M "_An update of microg was published. Please download it from the link in the pinned message._"
