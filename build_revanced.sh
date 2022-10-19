@@ -1,12 +1,11 @@
 #!/bin/bash
 
-# Log everything to build.log
-exec 3>&1 4>&2
-trap 'exec 2>&4 1>&3' 0 1 2 3
-[ -d "$1" ] && exec 1>"$1/build.log" 2>&1
-
 # Run only one instance of this script at one time
 [ "${BKLOCKER}" != "running" ] && exec env BKLOCKER="running" flock -en "/tmp/revanced-builder.lock" "$0" "$@" || :
+
+# Log everything to build.log
+log_file="$1/logs/$(date '+%s')"
+[ -d "$1" ] && mkdir -p "$1/logs" && exec > >(tee "$log_file") 2>&1
 
 # Get timestamp
 timestamp=$(date '+%s')
@@ -120,6 +119,7 @@ for artifact in $artifacts; do
         # shellcheck disable=SC2086,SC2046
         curl -sLo "$name" "$(echo "$data" | jq -r '.browser_download_url')"
         jq ".\"$basename\" = \"$version\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
+        echo "Upgraded $basename from $version_present to $version"
         flag=true
     fi
 done
@@ -214,7 +214,7 @@ msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed
 ./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
 [ $microg_updated ] && ./telegram.sh -M "_An update of microg was published. Please download it from the link in the pinned message._"
 
-# Do some cleanup, keep only the last 3 build's worth of files
+# Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
 mkdir -p archive
 mv YouTube_ReVanced_nonroot_$timestamp.apk archive/
 mv YouTube_Music_ReVanced_nonroot_$timestamp.apk archive/
@@ -223,3 +223,4 @@ find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
     | tail -n +7 \
     | cut -f2- \
     | xargs -r -I {} rm "./archive/{}"
+find ./logs -mtime +7 -exec rm {} \;
