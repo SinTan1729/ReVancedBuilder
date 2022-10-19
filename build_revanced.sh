@@ -220,6 +220,6 @@ mv YouTube_ReVanced_nonroot_$timestamp.apk archive/
 mv YouTube_Music_ReVanced_nonroot_$timestamp.apk archive/
 find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
     | sort -rn \
-    | tail -n +6 \
+    | tail -n +7 \
     | cut -f2- \
-    | xargs -r -I {} rm {}
+    | xargs -r -I {} rm "./archive/{}"
