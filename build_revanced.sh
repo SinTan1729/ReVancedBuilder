@@ -3,7 +3,7 @@
 # Run only one instance of this script at one time
 [ "${BKLOCKER}" != "running" ] && exec env BKLOCKER="running" flock -en "/tmp/revanced-builder.lock" "$0" "$@" || :
 
-# Log everything to build.log
+# Log everything to a logfile inside logs/
 log_file="$1/logs/$(date '+%s')"
 [ -d "$1" ] && mkdir -p "$1/logs" && exec > >(tee "$log_file") 2>&1
 
