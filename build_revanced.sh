@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Log everything to build.log
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+[ -d "$1" ] && exec 1>"$1/build.log" 2>&1
+
 # Run only one instance of this script at one time
 [ "${BKLOCKER}" != "running" ] && exec env BKLOCKER="running" flock -en "/tmp/revanced-builder.lock" "$0" "$@" || :
 
@@ -91,7 +96,7 @@ check_flag=false
 
 # Get inside the working directory
 cd "$WDIR"
-echo "$(date) | Starting check..." | tee -a build.log
+echo "$(date) | Starting check..."
 
 # Fetch all the dependencies
 curl -X 'GET' 'https://releases.rvcd.win/tools' -H 'accept: application/json' | sed 's:\\\/:\/:g' > latest_versions.json
@@ -100,17 +105,17 @@ for artifact in $artifacts; do
     repo=$(echo $artifact | cut -d ':' -f1)
     name=$(echo $artifact | cut -d ':' -f2)
     basename=$(echo $repo | cut -d '/' -f2)
-    echo "Checking $basename" | tee -a build.log
+    echo "Checking $basename"
     version_present=$(jq -r ".\"$basename\"" versions.json)
     data="$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)"
     version=$(echo "$data" | jq -r '.version')
     if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
         if [[ $2 == checkonly ]]; then
-            echo "[checkonly] $basename has an update ($version_present -> $version)" | tee -a build.log
+            echo "[checkonly] $basename has an update ($version_present -> $version)"
             check_flag=true
             continue
         fi
-        echo "Downloading $name" | tee -a build.log
+        echo "Downloading $name"
         [[ $name == microg.apk && -f $name && $2 != force ]] && microg_updated=true
         # shellcheck disable=SC2086,SC2046
         curl -sLo "$name" "$(echo "$data" | jq -r '.browser_download_url')"
@@ -124,11 +129,11 @@ done
 # Exit if no updates happened
 if [[ $flag == false && $2 != force ]]; then
     if [[ $check_flag == false ]]; then
-        echo "Nothing to update" | tee -a build.log
+        echo "Nothing to update"
     else
         "$SDIR/download_apkmirror.sh" "$WDIR" checkonly
     fi
-    echo "--------------------"$'\n'"--------------------" | tee -a build.log
+    echo "--------------------"$'\n'"--------------------"
     exit
 fi
 
@@ -142,7 +147,7 @@ fi
 #     # Vanced microG 0.2.24.220220
 #     VMG_VERSION="0.2.24.220220"
 
-#     echo "Downloading Vanced microG" | tee -a build.log
+#     echo "Downloading Vanced microG"
 #     ./apkeep -a com.mgoogle.android.gms@$VMG_VERSION .
 #     mv com.mgoogle.android.gms@$VMG_VERSION.apk vanced-microG.apk
 #     jq ".\"vanced-microG\" = \"$VMG_VERSION\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
@@ -162,13 +167,13 @@ if [ -f "com.google.android.youtube.apk" ]; then
 #        -e microg-support ${patches[@]} \
 #        $EXPERIMENTAL \
 #        -a com.google.android.youtube.apk -o build/revanced-yt-root.apk
-    echo "Building Non-root APK" | tee -a build.log
+    echo "Building Non-root APK"
     java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
         -a com.google.android.youtube.apk -o revanced-yt-nonroot.apk
 else
-    echo "Cannot find YouTube APK, skipping build" | tee -a build.log
+    echo "Cannot find YouTube APK, skipping build"
 fi
 echo ""
 echo "************************************"
@@ -180,13 +185,13 @@ if [ -f "com.google.android.apps.youtube.music.apk" ]; then
 #        -e microg-support ${patches[@]} \
 #        $EXPERIMENTAL \
 #        -a com.google.android.apps.youtube.music.apk -o build/revanced-ytm-root.apk
-    echo "Building Non-root APK" | tee -a build.log
+    echo "Building Non-root APK"
     java -jar revanced-cli.jar -m revanced-integrations.apk  -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
         -a com.google.android.apps.youtube.music.apk -o revanced-ytm-nonroot.apk
 else
-    echo "Cannot find YouTube Music APK, skipping build" | tee -a build.log
+    echo "Cannot find YouTube Music APK, skipping build"
 fi
 
 # Rename files
@@ -196,7 +201,7 @@ mv revanced-ytm-nonroot.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk
 # mv revanced-ytm-root.apk YouTube_Music_ReVanced_root_$timestamp.apk
 
 # Send telegram message about the new build
-echo "Sending messages to telegram" | tee -a build.log
+echo "Sending messages to telegram"
 
 # telegram-upload uses personal account, hence bypassing 50 MB max upload limit of bots
 channel_address=$(cat channel_address | sed -z '$ s/\n$//')
