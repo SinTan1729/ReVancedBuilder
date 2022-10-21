@@ -224,3 +224,5 @@ find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
     | cut -f2- \
     | xargs -r -I {} rm "./archive/{}"
 find ./logs -mtime +7 -exec rm {} \;
+
+echo "Done!"$'\n'"************************************"
