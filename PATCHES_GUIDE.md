@@ -2,7 +2,7 @@
 
 **Please read the following information before beginning.**
 
-By default the script will build ReVanced with ALL default* patches. Edit `patches.txt` to customize your build of ReVanced.
+By default the script will build ReVanced with ALL default* patches. Copy `chosen_patches.txt` inside your provided working directory and edit it to customize your build of ReVanced.
 
 *Default: All patches except those which have to be ***included*** explicitly, i.e, using the `-i` flag while manually using the ReVanced CLI
 

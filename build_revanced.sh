@@ -10,9 +10,6 @@ log_file="$1/logs/$(date '+%s')"
 # Get timestamp
 timestamp=$(date '+%s')
 
-# File containing all patches
-patch_file="./patches.txt"
-
 # Set working directory and current directory
 if [ -d "$1" ]; then
     WDIR="$1"
@@ -20,6 +17,9 @@ else
     echo "Working directory not provided"
     exit -1
 fi
+
+# File containing all patches
+patch_file="$WDIR./chosen_patches.txt"
 
 # Returns if $1 is less than $2
 ver_less_than() {
