@@ -205,13 +205,13 @@ echo "Sending messages to telegram"
 
 # telegram-upload uses personal account, hence bypassing 50 MB max upload limit of bots
 channel_address=$(cat channel_address | sed -z '$ s/\n$//')
-/home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$channel_address" --caption ""
+/home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$channel_address" --caption "" && sent=true
 
 # telegram.sh uses bot account, but it supports formatted messages
 msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" \
         | sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" \
         | sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
-./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+[ $sent ] && ./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
 [ $microg_updated ] && ./telegram.sh -M "_An update of microg was published. Please download it from the link in the pinned message._"
 
 # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
