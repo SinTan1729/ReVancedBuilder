@@ -5,6 +5,8 @@ declare -A apks
 apks["com.google.android.youtube"]=dl_yt
 apks["com.google.android.apps.youtube.music"]=dl_ytm
 
+flag=$2
+
 ## Functions
 
 # Wget user agent
@@ -36,7 +38,7 @@ ver_less_than() {
 dl_apk() {
 	local url=$1 regexp=$2 output=$3
 	url="https://www.apkmirror.com$(req "$url" - | tr '\n' ' ' | sed -n "s/href=\"/@/g; s;.*${regexp}.*;\1;p")"
-	echo "$url" | tee -a build.log
+	echo "$url"
 	url="https://www.apkmirror.com$(req "$url" - | tr '\n' ' ' | sed -n 's;.*href="\(.*key=[^"]*\)">.*;\1;p')"
 	url="https://www.apkmirror.com$(req "$url" - | tr '\n' ' ' | sed -n 's;.*href="\(.*key=[^"]*\)">.*;\1;p')"
 	req "$url" "$output"
@@ -44,22 +46,22 @@ dl_apk() {
 
 # Downloading youtube
 dl_yt() {
-	if [[ $2 == checkonly ]]; then
-		echo "[checkonly] YouTube Music has an update ($version_present -> $version)" | tee -a build.log
-		break
+	if [[ $flag == checkonly ]]; then
+		echo "[checkonly] YouTube has an update ($version_present -> $version)"
+		return
 	fi
-	echo "Downloading YouTube" | tee -a build.log
+	echo "Downloading YouTube"
 	local last_ver
 	last_ver="$version"
 	# last_ver="${last_ver:-$(get_apk_vers "https://www.apkmirror.com/uploads/?appcategory=youtube" | get_largest_ver)}"
 
-	echo "Choosing version '${last_ver}'" | tee -a build.log
+	echo "Choosing version '${last_ver}'"
 	local base_apk="com.google.android.youtube.apk"
 	declare -r dl_url=$(dl_apk "https://www.apkmirror.com/apk/google-inc/youtube/youtube-${last_ver//./-}-release/" \
 		"APK</span>[^@]*@\([^#]*\)" \
 		"$base_apk")
-	echo "YouTube version: ${last_ver}" | tee -a build.log
-	echo "downloaded from: [APKMirror - YouTube]($dl_url)" | tee -a build.log
+	echo "YouTube version: ${last_ver}"
+	echo "downloaded from: [APKMirror - YouTube]($dl_url)"
 	jq ".\"$apk\" = \"$last_ver\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
 }
 
@@ -69,17 +71,17 @@ ARM_V7A="arm-v7a"
 
 # Downloading youtube music
 dl_ytm() {
-	if [[ $2 == checkonly ]]; then
-		echo "[checkonly] YouTube Music has an update ($version_present -> $version)" | tee -a build.log
-		break
+	if [[ $flag == checkonly ]]; then
+		echo "[checkonly] YouTube Music has an update ($version_present -> $version)"
+		return
 	fi
 	local arch=$ARM64_V8A
-	echo "Downloading YouTube Music (${arch})" | tee -a build.log
+	echo "Downloading YouTube Music (${arch})"
 	local last_ver
 	last_ver="$version"
 	# last_ver="${last_ver:-$(get_apk_vers "https://www.apkmirror.com/uploads/?appcategory=youtube-music" | get_largest_ver)}"
 
-	echo "Choosing version '${last_ver}'" | tee -a build.log
+	echo "Choosing version '${last_ver}'"
 	local base_apk="com.google.android.apps.youtube.music.apk"
 	if [ "$arch" = "$ARM64_V8A" ]; then
 		local regexp_arch='arm64-v8a</div>[^@]*@\([^"]*\)'
@@ -89,8 +91,8 @@ dl_ytm() {
 	declare -r dl_url=$(dl_apk "https://www.apkmirror.com/apk/google-inc/youtube-music/youtube-music-${last_ver//./-}-release/" \
 		"$regexp_arch" \
 		"$base_apk")
-	echo "\nYouTube Music (${arch}) version: ${last_ver}" | tee -a build.log
-	echo "downloaded from: [APKMirror - YouTube Music ${arch}]($dl_url)" | tee -a build.log
+	echo "\nYouTube Music (${arch}) version: ${last_ver}"
+	echo "downloaded from: [APKMirror - YouTube Music ${arch}]($dl_url)"
 	jq ".\"$apk\" = \"$last_ver\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
 }
 
@@ -106,12 +108,12 @@ fi
 ## Main
 curl -X 'GET' 'https://releases.rvcd.win/patches' -H 'accept: application/json' -o patches.json
 for apk in "${!apks[@]}"; do
-	echo "Checking $apk" | tee -a build.log
+	echo "Checking $apk"
 	supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
 	version=0
 	for vers in $supported_vers; do
 		[ $vers != "null" ] && [[ $(ver_less_than $vers $version) == true || $version == 0 ]] && version=$vers
 	done
 	version_present=$(jq -r ".\"$apk\"" versions.json)
-	[[ $(ver_less_than $version_present $version) == true || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version ($version_present) of "$apk" is already present" | tee -a build.log
+	[[ $(ver_less_than $version_present $version) == true || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version ($version_present) of "$apk" is already present"
 done
