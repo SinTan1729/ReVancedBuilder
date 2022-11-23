@@ -23,9 +23,10 @@ patch_file="$WDIR./chosen_patches.txt"
 
 # Returns if $1 is less than $2
 ver_less_than() {
-    [ ${1:0:1} == "v" ] && var1=${1:1} || var1=$1
-    [ ${2:0:1} == "v" ] && var2=${2:1} || var2=$2
-    [ $(echo $var1$'\n'$var2 | sort -V | tail -n1) != $var1 ] && echo true || echo false
+    # Strip letters from version name
+    ver1=$(echo $1 | sed 's/[a-zA-Z]*//g')
+    ver2=$(echo $2 | sed 's/[a-zA-Z]*//g')
+    [ $(echo $ver1$'\n'$ver2 | sort -V | tail -n1) != $ver1 ] && echo true || echo false
 }
 
 # Make sure to work in the script directory
