@@ -227,4 +227,7 @@ find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
     | xargs -r -I {} rm "./archive/{}"
 find ./logs -mtime +7 -exec rm {} \;
 
+# Run a custom post script, if available
+[ -f post_script.sh ] && ./post_script.sh $timestamp
+
 echo "Done!"$'\n'"************************************"
