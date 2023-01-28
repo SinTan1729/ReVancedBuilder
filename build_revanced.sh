@@ -15,7 +15,7 @@ if [ -d "$1" ]; then
     WDIR="$1"
 else
     echo "Working directory not provided"
-    exit -1
+    exit 1
 fi
 
 # File containing all patches
@@ -99,7 +99,17 @@ cd "$WDIR"
 echo "$(date) | Starting check..."
 
 # Fetch all the dependencies
-curl -X 'GET' 'https://releases.rvcd.win/tools' -H 'accept: application/json' | sed 's:\\\/:\/:g' > latest_versions.json
+try=0
+while : ; do
+	try=$(($try+1))
+    echo $try
+	[ $try -gt 10 ] && echo "API error!" && exit 2
+	curl -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
+	cat latest_versions.json | jq -e '.error' >/dev/null || break
+    echo "API failure, trying again. $((10-$try)) tries left..."
+    sleep 10
+done
+
 for artifact in $artifacts; do
     #Check for updates
     repo=$(echo $artifact | cut -d ':' -f1)

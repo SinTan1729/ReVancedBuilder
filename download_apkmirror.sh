@@ -106,7 +106,16 @@ else
 fi
 
 ## Main
-curl -X 'GET' 'https://releases.rvcd.win/patches' -H 'accept: application/json' -o patches.json
+try=0
+while : ; do
+	try=$(($try+1))
+	[ $try -gt 10 ] && echo "API error!" && exit 3
+	curl -X 'GET' 'https://releases.revanced.app/patches' -H 'accept: application/json' -o patches.json
+	cat patches.json | jq -e '.error' >/dev/null 2>&1 || break
+	echo "API failure, trying again. $((10-$try)) tries left..."
+	sleep 10
+done
+
 for apk in "${!apks[@]}"; do
 	echo "Checking $apk"
 	supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
