@@ -102,7 +102,6 @@ echo "$(date) | Starting check..."
 try=0
 while : ; do
 	try=$(($try+1))
-    echo $try
 	[ $try -gt 10 ] && echo "API error!" && exit 2
 	curl -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
 	cat latest_versions.json | jq -e '.error' >/dev/null || break
