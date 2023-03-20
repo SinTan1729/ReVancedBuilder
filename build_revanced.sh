@@ -30,17 +30,17 @@ ver_less_than() {
 }
 
 # Make sure to work in the script directory
-SDIR="$(dirname -- "$( readlink -f -- "$0"; )";)"
+SDIR="$(dirname -- "$(readlink -f -- "$0")")"
 cd "$SDIR"
 
-# Get line numbers where included & excluded patches start from. 
+# Get line numbers where included & excluded patches start from.
 # We rely on the hardcoded messages to get the line numbers using grep
 excluded_start="$(grep -n -m1 'EXCLUDE PATCHES' "$patch_file" | cut -d':' -f1)"
 included_start="$(grep -n -m1 'INCLUDE PATCHES' "$patch_file" | cut -d':' -f1)"
 
 # Get everything but hashes from between the EXCLUDE PATCH & INCLUDE PATCH line
 # Note: '^[^#[:blank:]]' ignores starting hashes and/or blank characters i.e, whitespace & tab excluding newline
-excluded_patches="$(tail -n +$excluded_start $patch_file | head -n "$(( included_start - excluded_start ))" | grep '^[^#[:blank:]]')"
+excluded_patches="$(tail -n +$excluded_start $patch_file | head -n "$((included_start - excluded_start))" | grep '^[^#[:blank:]]')"
 
 # Get everything but hashes starting from INCLUDE PATCH line until EOF
 included_patches="$(tail -n +$included_start $patch_file | grep '^[^#[:blank:]]')"
@@ -57,7 +57,7 @@ declare -a patches
 # artifacts["apkeep"]="EFForg/apkeep apkeep-x86_64-unknown-linux-gnu"
 
 # Required artifacts in the format repository-name_filename
-artifacts="revanced/revanced-cli:revanced-cli.jar revanced/revanced-integrations:revanced-integrations.apk revanced/revanced-patches:revanced-patches.jar TeamVanced/VancedMicroG:microg.apk"
+artifacts="revanced/revanced-cli:revanced-cli.jar revanced/revanced-integrations:revanced-integrations.apk revanced/revanced-patches:revanced-patches.jar inotia00/VancedMicroG:microg.apk"
 
 ## Functions
 
@@ -75,7 +75,7 @@ populate_patches() {
     # Note: <<< defines a 'here-string'. Meaning, it allows reading from variables just like from a file
     while read -r patch; do
         patches+=("$1 $patch")
-    done <<< "$2"
+    done <<<"$2"
 }
 
 ## Main
@@ -100,12 +100,12 @@ echo "$(date) | Starting check..."
 
 # Fetch all the dependencies
 try=0
-while : ; do
-	try=$(($try+1))
-	[ $try -gt 10 ] && echo "API error!" && exit 2
-	curl -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
-	cat latest_versions.json | jq -e '.error' >/dev/null || break
-    echo "API failure, trying again. $((10-$try)) tries left..."
+while :; do
+    try=$(($try + 1))
+    [ $try -gt 10 ] && echo "API error!" && exit 2
+    curl -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
+    cat latest_versions.json | jq -e '.error' >/dev/null || break
+    echo "API failure, trying again. $((10 - $try)) tries left..."
     sleep 10
 done
 
@@ -117,7 +117,7 @@ for artifact in $artifacts; do
     echo "Checking $basename"
     version_present=$(jq -r ".\"$basename\"" versions.json)
     data="$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)"
-    version=$(echo "$data" | jq -r '.version')
+    [[ $name == microg.apk ]] && version=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name') || version=$(echo "$data" | jq -r '.version')
     if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
         if [[ $2 == checkonly ]]; then
             echo "[checkonly] $basename has an update ($version_present -> $version)"
@@ -127,8 +127,9 @@ for artifact in $artifacts; do
         echo "Downloading $name"
         [[ $name == microg.apk && -f $name && $2 != force ]] && microg_updated=true
         # shellcheck disable=SC2086,SC2046
-        curl -sLo "$name" "$(echo "$data" | jq -r '.browser_download_url')"
-        jq ".\"$basename\" = \"$version\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
+        [[ $name == microg.apk ]] && download_link="https://github.com/$repo/releases/latest/download/$name" || download_link="$(echo "$data" | jq -r '.browser_download_url')"
+        curl -sLo "$name" "$download_link"
+        jq ".\"$basename\" = \"$version\"" versions.json >versions.json.tmp && mv versions.json.tmp versions.json
         echo "Upgraded $basename from $version_present to $version"
         flag=true
     fi
@@ -172,11 +173,11 @@ echo "Building YouTube APK"
 echo "************************************"
 
 if [ -f "com.google.android.youtube.apk" ]; then
-#    echo "Building Root APK"
-#    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
-#        -e microg-support ${patches[@]} \
-#        $EXPERIMENTAL \
-#        -a com.google.android.youtube.apk -o build/revanced-yt-root.apk
+    #    echo "Building Root APK"
+    #    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
+    #        -e microg-support ${patches[@]} \
+    #        $EXPERIMENTAL \
+    #        -a com.google.android.youtube.apk -o build/revanced-yt-root.apk
     echo "Building Non-root APK"
     java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
@@ -190,13 +191,13 @@ echo "************************************"
 echo "Building YouTube Music APK"
 echo "************************************"
 if [ -f "com.google.android.apps.youtube.music.apk" ]; then
-#    echo "Building Root APK"
-#    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
-#        -e microg-support ${patches[@]} \
-#        $EXPERIMENTAL \
-#        -a com.google.android.apps.youtube.music.apk -o build/revanced-ytm-root.apk
+    #    echo "Building Root APK"
+    #    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
+    #        -e microg-support ${patches[@]} \
+    #        $EXPERIMENTAL \
+    #        -a com.google.android.apps.youtube.music.apk -o build/revanced-ytm-root.apk
     echo "Building Non-root APK"
-    java -jar revanced-cli.jar -m revanced-integrations.apk  -b revanced-patches.jar \
+    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
         ${patches[@]} \
         $EXPERIMENTAL \
         -a com.google.android.apps.youtube.music.apk -o revanced-ytm-nonroot.apk
@@ -218,22 +219,22 @@ echo "Sending messages to telegram"
 # /home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$channel_address" --caption "" && sent=true
 
 # telegram.sh uses bot account, but it supports formatted messages
-msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" \
-        | sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" \
-        | sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
-# [ $sent ] && 
+msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" |
+    sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" |
+    sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
+# [ $sent ] &&
 ./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
-[ $microg_updated ] && ./telegram.sh -M "_An update of microg was published. Please download it from the link in the pinned message._"
+[ $microg_updated ] && ./telegram.sh -M "_An update of microg was published._"
 
 # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
 mkdir -p archive
 mv YouTube_ReVanced_nonroot_$timestamp.apk archive/
 mv YouTube_Music_ReVanced_nonroot_$timestamp.apk archive/
-find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' \
-    | sort -rn \
-    | tail -n +7 \
-    | cut -f2- \
-    | xargs -r -I {} rm "./archive/{}"
+find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' |
+    sort -rn |
+    tail -n +7 |
+    cut -f2- |
+    xargs -r -I {} rm "./archive/{}"
 find ./logs -mtime +7 -exec rm {} \;
 
 # Run a custom post script, if available
