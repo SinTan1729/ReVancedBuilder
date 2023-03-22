@@ -1,0 +1,22 @@
+# These are the currently supported apps that can be built
+# Make a copy of this to your working directory
+# Then change the default values to enable/disable building them
+YT_NONROOT=true
+YTM_NONROOT=true
+YT_ROOT=false
+YTM_ROOT=false
+
+# Settings for sending Telegram notification using telegram.sh
+# In case you decide to use it, please put valid config in the
+# TOKEN and CHAT fields
+# Check out README for instructions
+TG_NOTIFICATIONS=false
+TELEGRAM_TOKEN=""
+TELEGRAM_CHAT=""
+
+# Settings for uploading the files through telegram-upload
+# In case you decide to use it, please put valid config in the
+# CHANNEL_ADDRESS field
+# Check out README for instructions
+TG_UPLOAD=false
+CHANNEL_ADDRESS=""

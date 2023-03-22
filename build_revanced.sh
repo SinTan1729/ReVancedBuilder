@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Run only one instance of this script at one time
 [ "${BKLOCKER}" != "running" ] && exec env BKLOCKER="running" flock -en "/tmp/revanced-builder.lock" "$0" "$@" || :
@@ -19,7 +19,7 @@ else
 fi
 
 # File containing all patches
-patch_file="$WDIR./chosen_patches.txt"
+patch_file="$WDIR/chosen_patches.txt"
 
 # Returns if $1 is less than $2
 ver_less_than() {
@@ -32,6 +32,18 @@ ver_less_than() {
 # Make sure to work in the script directory
 SDIR="$(dirname -- "$(readlink -f -- "$0")")"
 cd "$SDIR"
+
+# Read the settings
+if [ -f "$WDIR/build_settings" ]; then
+    source "$WDIR/build_settings"
+else
+    if [ -f "./build_settings"]; then
+        cp ./build_settings "$WDIR/build_settings"
+        source ./build_settings
+    else
+        echo "Could not find the build_settings file!"
+    fi
+fi
 
 # Get line numbers where included & excluded patches start from.
 # We rely on the hardcoded messages to get the line numbers using grep
@@ -48,27 +60,10 @@ included_patches="$(tail -n +$included_start $patch_file | grep '^[^#[:blank:]]'
 # Array for storing patches
 declare -a patches
 
-# # Artifacts associative array aka dictionary
-# declare -A artifacts
-
-# artifacts["revanced-cli.jar"]="revanced/revanced-cli revanced-cli .jar"
-# artifacts["revanced-integrations.apk"]="revanced/revanced-integrations app-release-unsigned .apk"
-# artifacts["revanced-patches.jar"]="revanced/revanced-patches revanced-patches .jar"
-# artifacts["apkeep"]="EFForg/apkeep apkeep-x86_64-unknown-linux-gnu"
-
 # Required artifacts in the format repository-name_filename
 artifacts="revanced/revanced-cli:revanced-cli.jar revanced/revanced-integrations:revanced-integrations.apk revanced/revanced-patches:revanced-patches.jar inotia00/VancedMicroG:microg.apk"
 
 ## Functions
-
-# get_artifact_download_url() {
-#     # Usage: get_download_url <repo_name> <artifact_name> <file_type>
-#     local api_url result
-#     api_url="https://api.github.com/repos/$1/releases/latest"
-#     # shellcheck disable=SC2086
-#     result=$(curl -s $api_url | jq ".assets[] | select(.name | contains(\"$2\") and contains(\"$3\") and (contains(\".sig\") | not)) | .browser_download_url")
-#     echo "${result:1:-1}"
-# }
 
 # Function for populating patches array, using a function here reduces redundancy & satisfies DRY principals
 populate_patches() {
@@ -151,85 +146,115 @@ fi
 # Download required apk files
 "$SDIR/download_apkmirror.sh" "$WDIR" $2
 
-# # Fetch microG
-# chmod +x apkeep
-
-# if [ ! -f "vanced-microG.apk" ]; then
-#     # Vanced microG 0.2.24.220220
-#     VMG_VERSION="0.2.24.220220"
-
-#     echo "Downloading Vanced microG"
-#     ./apkeep -a com.mgoogle.android.gms@$VMG_VERSION .
-#     mv com.mgoogle.android.gms@$VMG_VERSION.apk vanced-microG.apk
-#     jq ".\"vanced-microG\" = \"$VMG_VERSION\"" versions.json > versions.json.tmp && mv versions.json.tmp versions.json
-# fi
-
 # If the variables are NOT empty, call populate_patches with proper arguments
 [[ ! -z "$excluded_patches" ]] && populate_patches "-e" "$excluded_patches"
 [[ ! -z "$included_patches" ]] && populate_patches "-i" "$included_patches"
 
-echo "************************************"
-echo "Building YouTube APK"
-echo "************************************"
+# Functions for building the APKs
 
-if [ -f "com.google.android.youtube.apk" ]; then
-    #    echo "Building Root APK"
-    #    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
-    #        -e microg-support ${patches[@]} \
-    #        $EXPERIMENTAL \
-    #        -a com.google.android.youtube.apk -o build/revanced-yt-root.apk
-    echo "Building Non-root APK"
-    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
-        ${patches[@]} \
-        $EXPERIMENTAL \
-        -a com.google.android.youtube.apk -o revanced-yt-nonroot.apk
-else
-    echo "Cannot find YouTube APK, skipping build"
-fi
-echo ""
-echo "************************************"
-echo "Building YouTube Music APK"
-echo "************************************"
-if [ -f "com.google.android.apps.youtube.music.apk" ]; then
-    #    echo "Building Root APK"
-    #    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
-    #        -e microg-support ${patches[@]} \
-    #        $EXPERIMENTAL \
-    #        -a com.google.android.apps.youtube.music.apk -o build/revanced-ytm-root.apk
-    echo "Building Non-root APK"
-    java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
-        ${patches[@]} \
-        $EXPERIMENTAL \
-        -a com.google.android.apps.youtube.music.apk -o revanced-ytm-nonroot.apk
-else
-    echo "Cannot find YouTube Music APK, skipping build"
-fi
+build_yt_nonroot() {
+    echo "************************************"
+    echo "Building YouTube APK"
+    echo "************************************"
+    if [ -f "com.google.android.youtube.apk" ]; then
+        echo "Building Non-root APK"
+        java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
+            ${patches[@]} \
+            $EXPERIMENTAL \
+            -a com.google.android.youtube.apk -o revanced-yt-nonroot.apk
+    else
+        echo "Cannot find YouTube APK, skipping build"
+    fi
+    echo ""
+    echo "************************************"
 
-# Rename files
-mv revanced-yt-nonroot.apk YouTube_ReVanced_nonroot_$timestamp.apk
-mv revanced-ytm-nonroot.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk
-# mv revanced-yt-root.apk YouTube_ReVanced_root_$timestamp.apk
-# mv revanced-ytm-root.apk YouTube_Music_ReVanced_root_$timestamp.apk
+    # Rename files
+    mv revanced-yt-nonroot.apk YouTube_ReVanced_nonroot_$timestamp.apk
+}
+
+build_yt_root() {
+    echo "************************************"
+    echo "Building YouTube APK"
+    echo "************************************"
+    if [ -f "com.google.android.youtube.apk" ]; then
+        echo "Building Root APK"
+        java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
+            -e microg-support ${patches[@]} \
+            $EXPERIMENTAL \
+            -a com.google.android.youtube.apk -o revanced-yt-root.apk
+    else
+        echo "Cannot find YouTube APK, skipping build"
+    fi
+    echo ""
+    echo "************************************"
+
+    # Rename files
+    mv revanced-yt-root.apk YouTube_ReVanced_root_$timestamp.apk
+}
+
+build_ytm_nonroot() {
+    echo "Building YouTube Music APK"
+    echo "************************************"
+    if [ -f "com.google.android.apps.youtube.music.apk" ]; then
+        echo "Building Non-root APK"
+        java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar \
+            ${patches[@]} \
+            $EXPERIMENTAL \
+            -a com.google.android.apps.youtube.music.apk -o revanced-ytm-nonroot.apk
+    else
+        echo "Cannot find YouTube Music APK, skipping build"
+    fi
+
+    # Rename files
+    mv revanced-ytm-nonroot.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk
+}
+
+build_ytm_root() {
+    echo "Building YouTube Music APK"
+    echo "************************************"
+    if [ -f "com.google.android.apps.youtube.music.apk" ]; then
+        echo "Building Root APK"
+        java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar --mount \
+            -e microg-support ${patches[@]} \
+            $EXPERIMENTAL \
+            -a com.google.android.apps.youtube.music.apk -o revanced-ytm-root.apk
+    else
+        echo "Cannot find YouTube Music APK, skipping build"
+    fi
+
+    # Rename files
+    mv revanced-ytm-root.apk YouTube_Music_ReVanced_root_$timestamp.apk
+}
+
+# Check the config and build accordingly
+$YT_NONROOT && build_yt_nonroot
+$YT_ROOT && build_yt_root
+$YTM_NONROOT && build_ytm_nonroot
+$YTM_ROOT && build_ytm_root
 
 # Send telegram message about the new build
 echo "Sending messages to telegram"
 
-# telegram-upload uses personal account, hence bypassing 50 MB max upload limit of bots
-# channel_address=$(cat channel_address | sed -z '$ s/\n$//')
-# /home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$channel_address" --caption "" && sent=true
+if $TG_UPLOAD; then
+    # telegram-upload uses personal account, hence bypassing 50 MB max upload limit of bots
+    [ "$CHANNEL_ADDRESS" == "" ] && echo "Please provide valid channel address in the settings!"
+    /home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$CHANNEL_ADDRESS" --caption "" && sent=true
+fi
 
-# telegram.sh uses bot account, but it supports formatted messages
-msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" |
-    sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" |
-    sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
-# [ $sent ] &&
-./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
-[ $microg_updated ] && ./telegram.sh -M "_An update of microg was published._"
+if $TG_NOTIFICATIONS; then
+    # telegram.sh uses bot account, but it supports formatted messages
+    [[ "$TELEGRAM_TOKEN" == "" || "$TELEGRAM_CHAT" == "" ]] && echo "Please provide valid channel address in the settings!"
+    msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" |
+        sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" |
+        sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
+    # [ $sent ] &&
+    ./telegram.sh -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯" -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT"
+    [ $microg_updated ] && ./telegram.sh -M "_An update of microg was published._" -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT"
+fi
 
 # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
 mkdir -p archive
-mv YouTube_ReVanced_nonroot_$timestamp.apk archive/
-mv YouTube_Music_ReVanced_nonroot_$timestamp.apk archive/
+mv *ReVanced_*_$timestamp.apk archive/
 find ./archive -maxdepth 1 -type f -printf '%Ts\t%P\n' |
     sort -rn |
     tail -n +7 |
