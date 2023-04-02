@@ -12,8 +12,8 @@ Just run `./build_revanced <working-directory> (force/clean/experimental/checkon
 - The script will download the **automatically selected compatible version** (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKMirror, **NOT** latest official version on Google Play.
 - Under **NO CIRCUMSTANCES** any APKs will be uploaded to this repository to avoid DMCA.
 - If you enable the telegram notifications or uploads, make sure to fill up the config options inside the `build_settings` file. For more information about the config, take at look at the repos of `telegram.sh` and `telegram-upload` provided above.
-- It can also run a post script (if exists) called `post_script.sh`. The `timestamp` would is passed as `$1`.
-- In the current configuration, the script only builds YouTube ReVanced and YouTube Music ReVanced (both nonroot), but it's easy to add support for any other ReVanced app. The code for root builds is included but commented out.
+- It can also run a post script (if exists) called `post_script.sh`. The `timestamp` is passed as `$1`.
+- In the current configuration, the script only builds YouTube ReVanced and YouTube Music ReVanced (both nonroot), but it's easy to add support for any other ReVanced app. The code for root builds is included but disabled by default.
 - All the packages are pulled from [APKMirror](https://apkmirror.com) and GitHub (the `revanced/*` repos).
 
 ## Customize your build
