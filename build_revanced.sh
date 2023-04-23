@@ -150,6 +150,9 @@ fi
 [[ ! -z "$excluded_patches" ]] && populate_patches "-e" "$excluded_patches"
 [[ ! -z "$included_patches" ]] && populate_patches "-i" "$included_patches"
 
+# Variable to flag errors
+error=0
+
 # Functions for building the APKs
 
 build_yt_nonroot() {
@@ -169,7 +172,7 @@ build_yt_nonroot() {
     echo "************************************"
 
     # Rename files
-    mv revanced-yt-nonroot.apk YouTube_ReVanced_nonroot_$timestamp.apk
+    mv revanced-yt-nonroot.apk YouTube_ReVanced_nonroot_$timestamp.apk || error=1
 }
 
 build_yt_root() {
@@ -189,7 +192,7 @@ build_yt_root() {
     echo "************************************"
 
     # Rename files
-    mv revanced-yt-root.apk YouTube_ReVanced_root_$timestamp.apk
+    mv revanced-yt-root.apk YouTube_ReVanced_root_$timestamp.apk || error=1
 }
 
 build_ytm_nonroot() {
@@ -206,7 +209,7 @@ build_ytm_nonroot() {
     fi
 
     # Rename files
-    mv revanced-ytm-nonroot.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk
+    mv revanced-ytm-nonroot.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk || error=1
 }
 
 build_ytm_root() {
@@ -223,7 +226,7 @@ build_ytm_root() {
     fi
 
     # Rename files
-    mv revanced-ytm-root.apk YouTube_Music_ReVanced_root_$timestamp.apk
+    mv revanced-ytm-root.apk YouTube_Music_ReVanced_root_$timestamp.apk || error=1
 }
 
 # Check the config and build accordingly
@@ -233,6 +236,15 @@ $YTM_NONROOT && build_ytm_nonroot
 $YTM_ROOT && build_ytm_root
 
 # Send telegram message about the new build
+
+if [ $error == 1 ]; then
+    echo "There was an error while building!"
+    if $TG_NOTIFICATIONS; then
+        ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "❗❗❗ Build Error ❗❗❗" -M "There was an error during the build process! Please take a look at the logs."$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+    fi
+    mv versions.json versions.json.bk
+    exit 4
+fi
 
 if $TG_UPLOAD; then
     echo "Uploading to telegram"
