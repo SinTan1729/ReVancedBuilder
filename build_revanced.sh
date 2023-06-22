@@ -253,16 +253,28 @@ if $TG_UPLOAD; then
     /home/sintan/.local/bin/telegram-upload YouTube_ReVanced_nonroot_$timestamp.apk YouTube_Music_ReVanced_nonroot_$timestamp.apk --to "$CHANNEL_ADDRESS" --caption "" && sent=true
 fi
 
+# Create the message to be sent
+msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" |
+    sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" |
+    sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
+
 if $TG_NOTIFICATIONS; then
     echo "Sending messages to telegram"
     # telegram.sh uses bot account, but it supports formatted messages
     [[ "$TELEGRAM_TOKEN" == "" || "$TELEGRAM_CHAT" == "" ]] && echo "Please provide valid channel address in the settings!"
-    msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed "s/,//g" | sed "s/com.google.android.apps.youtube.music/YouTube Music/" |
-        sed "s/com.google.android.youtube/YouTube/" | sed "s/VancedMicroG/Vanced microG/" | sed "s/revanced-/ReVanced /g" | sed "s/patches/Patches/" |
-        sed "s/cli/CLI/" | sed "s/integrations/Integrations/" | awk 1 ORS=$'\n') # I know, it's a hacky solution
-    # [ $sent ] &&
     ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
     [ $microg_updated ] && ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -M "_An update of microg was published._"
+fi
+
+if $GOTIFY_NOTIFICATIONS; then
+    echo "Sending messages to Gotify"
+    MESSAGE="$msg"$'\n'"Timestamp: $timestamp"
+    curl -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
+        -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$MESSAGE" -F "priority=5"
+
+    MESSAGE="An update of microg was published."
+    [ $microg_updated ] && curl -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
+        -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$MESSAGE" -F "priority=5"
 fi
 
 # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
