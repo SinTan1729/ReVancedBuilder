@@ -277,6 +277,20 @@ if $GOTIFY_NOTIFICATIONS; then
         -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$MESSAGE" -F "priority=5"
 fi
 
+if $NTFY_NOTIFICATIONS; then
+    echo "Sending messages to ntfy.sh"
+    MESSAGE="$msg"$'\n'"Timestamp: $timestamp"
+    curl -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
+        -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
+        -d "$MESSAGE" \
+        "$NTFY_URL/$NTFY_TOPIC"
+    MESSAGE="An update of microg was published."
+    [ $microg_updated ] && curl -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
+        -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
+        -d "$MESSAGE" \
+        "$NTFY_URL/$NTFY_TOPIC"
+fi
+
 # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
 mkdir -p archive
 mv *ReVanced_*_$timestamp.apk archive/

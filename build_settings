@@ -28,3 +28,10 @@ CHANNEL_ADDRESS=""
 GOTIFY_NOTIFICATIONS=false
 GOTIFY_URL="https://push.example.com"
 GOTIFY_TOKEN=""
+
+# Settings for sending ntfy.sh notifications
+# In case you decide to use it, please put valid config in the
+# URL and TOPIC fields
+NTFY_NOTIFICATIONS=false
+NTFY_URL="https://ntfy.sh"
+NTFY_TOPIC=""
