@@ -101,7 +101,7 @@ if [[ $2 != buildonly ]]; then
     while :; do
         try=$(($try + 1))
         [ $try -gt 10 ] && echo "API error!" && exit 2
-        curl -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
+        curl -s -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
         cat latest_versions.json | jq -e '.error' >/dev/null || break
         echo "API failure, trying again. $((10 - $try)) tries left..."
         sleep 10
@@ -248,11 +248,11 @@ if [ $error == 1 ]; then
         ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "❗❗❗ Build Error ❗❗❗" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
     fi
     if $GOTIFY_NOTIFICATIONS; then
-        curl -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
+        curl -sX POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
             -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$msg" -F "priority=5"
     fi
     if $NTFY_NOTIFICATIONS; then
-        curl -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
+        curl -s -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
             -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
             -d "$MESSAGE" \
             "$NTFY_URL/$NTFY_TOPIC"
@@ -287,23 +287,23 @@ fi
 if $GOTIFY_NOTIFICATIONS; then
     echo "Sending messages to Gotify"
     MESSAGE="$msg"$'\n'"Timestamp: $timestamp"
-    curl -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
+    curl -s -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
         -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$MESSAGE" -F "priority=5"
 
     MESSAGE="An update of microg was published."
-    [ $microg_updated ] && curl -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
+    [ $microg_updated ] && curl -s -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
         -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$MESSAGE" -F "priority=5"
 fi
 
 if $NTFY_NOTIFICATIONS; then
     echo "Sending messages to ntfy.sh"
     MESSAGE="$msg"$'\n'"Timestamp: $timestamp"
-    curl -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
+    curl -s -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
         -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
         -d "$MESSAGE" \
         "$NTFY_URL/$NTFY_TOPIC"
     MESSAGE="An update of microg was published."
-    [ $microg_updated ] && curl -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
+    [ $microg_updated ] && curl -s -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
         -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
         -d "$MESSAGE" \
         "$NTFY_URL/$NTFY_TOPIC"
