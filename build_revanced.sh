@@ -92,60 +92,63 @@ check_flag=false
 # Get inside the working directory
 cd "$WDIR"
 echo "$(date) | Starting check..."
-cp verions.json versions.json.old
 
-# Fetch all the dependencies
-try=0
-while :; do
-    try=$(($try + 1))
-    [ $try -gt 10 ] && echo "API error!" && exit 2
-    curl -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
-    cat latest_versions.json | jq -e '.error' >/dev/null || break
-    echo "API failure, trying again. $((10 - $try)) tries left..."
-    sleep 10
-done
+if [[ $2 != buildonly ]]; then
+    # Create a backup of versions
+    cp verions.json versions.json.old
+    # Fetch all the dependencies
+    try=0
+    while :; do
+        try=$(($try + 1))
+        [ $try -gt 10 ] && echo "API error!" && exit 2
+        curl -X 'GET' 'https://releases.revanced.app/tools' -H 'accept: application/json' -o latest_versions.json
+        cat latest_versions.json | jq -e '.error' >/dev/null || break
+        echo "API failure, trying again. $((10 - $try)) tries left..."
+        sleep 10
+    done
 
-for artifact in $artifacts; do
-    #Check for updates
-    repo=$(echo $artifact | cut -d ':' -f1)
-    name=$(echo $artifact | cut -d ':' -f2)
-    basename=$(echo $repo | cut -d '/' -f2)
-    echo "Checking $basename"
-    version_present=$(jq -r ".\"$basename\"" versions.json)
-    data="$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)"
-    [[ $name == microg.apk ]] && version=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name') || version=$(echo "$data" | jq -r '.version')
-    if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
-        if [[ $2 == checkonly ]]; then
-            echo "[checkonly] $basename has an update ($version_present -> $version)"
-            check_flag=true
-            continue
+    for artifact in $artifacts; do
+        #Check for updates
+        repo=$(echo $artifact | cut -d ':' -f1)
+        name=$(echo $artifact | cut -d ':' -f2)
+        basename=$(echo $repo | cut -d '/' -f2)
+        echo "Checking $basename"
+        version_present=$(jq -r ".\"$basename\"" versions.json)
+        data="$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)"
+        [[ $name == microg.apk ]] && version=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name') || version=$(echo "$data" | jq -r '.version')
+        if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
+            if [[ $2 == checkonly ]]; then
+                echo "[checkonly] $basename has an update ($version_present -> $version)"
+                check_flag=true
+                continue
+            fi
+            echo "Downloading $name"
+            [[ $name == microg.apk && -f $name && $2 != force ]] && microg_updated=true
+            # shellcheck disable=SC2086,SC2046
+            [[ $name == microg.apk ]] && download_link="https://github.com/$repo/releases/latest/download/$name" || download_link="$(echo "$data" | jq -r '.browser_download_url')"
+            curl -sLo "$name" "$download_link"
+            jq ".\"$basename\" = \"$version\"" versions.json >versions.json.tmp && mv versions.json.tmp versions.json
+            echo "Upgraded $basename from $version_present to $version"
+            flag=true
         fi
-        echo "Downloading $name"
-        [[ $name == microg.apk && -f $name && $2 != force ]] && microg_updated=true
-        # shellcheck disable=SC2086,SC2046
-        [[ $name == microg.apk ]] && download_link="https://github.com/$repo/releases/latest/download/$name" || download_link="$(echo "$data" | jq -r '.browser_download_url')"
-        curl -sLo "$name" "$download_link"
-        jq ".\"$basename\" = \"$version\"" versions.json >versions.json.tmp && mv versions.json.tmp versions.json
-        echo "Upgraded $basename from $version_present to $version"
-        flag=true
-    fi
-done
+    done
 
-[[ ! -f com.google.android.youtube.apk || ! -f com.google.android.apps.youtube.music.apk ]] && flag=true
+    [[ ! -f com.google.android.youtube.apk || ! -f com.google.android.apps.youtube.music.apk ]] && flag=true
 
-# Exit if no updates happened
-if [[ $flag == false && $2 != force ]]; then
-    if [[ $check_flag == false ]]; then
-        echo "Nothing to update"
-    else
-        "$SDIR/download_apkmirror.sh" "$WDIR" checkonly
+    # Exit if no updates happened
+    if [[ $flag == false && $2 != force ]]; then
+        if [[ $check_flag == false ]]; then
+            echo "Nothing to update"
+        else
+            "$SDIR/download_apkmirror.sh" "$WDIR" checkonly
+        fi
+        echo "--------------------"$'\n'"--------------------"
+        exit
     fi
-    echo "--------------------"$'\n'"--------------------"
-    exit
+
+    # Download required apk files
+    "$SDIR/download_apkmirror.sh" "$WDIR"
 fi
-
-# Download required apk files
-[[ $2 != buildonly ]] && "$SDIR/download_apkmirror.sh" "$WDIR"
 
 # If the variables are NOT empty, call populate_patches with proper arguments
 [[ ! -z "$excluded_patches" ]] && populate_patches "-e" "$excluded_patches"
@@ -254,8 +257,10 @@ if [ $error == 1 ]; then
             -d "$MESSAGE" \
             "$NTFY_URL/$NTFY_TOPIC"
     fi
-    mv versions.json versions.json.fail
-    mv versions.json.old versions.json
+    if [[ $2 != buildonly ]]; then
+        mv versions.json versions.json.fail
+        mv versions.json.old versions.json
+    fi
     exit 4
 fi
 
