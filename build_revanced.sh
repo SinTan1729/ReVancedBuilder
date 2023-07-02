@@ -233,6 +233,24 @@ build_ytm_root() {
     mv revanced-ytm-root.apk YouTube_Music_ReVanced_root_$timestamp.apk || error=1
 }
 
+telegram_send_msg() {
+    # telegram.sh uses bot account, but it supports formatted messages
+    [[ "$TELEGRAM_TOKEN" == "" || "$TELEGRAM_CHAT" == "" ]] && echo "Please provide valid channel address in the settings!"
+    ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$1"$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+}
+
+gotify_send_msg() {
+    curl -s -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
+        -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$1" -F "priority=5"
+}
+
+ntfy_send_msg() {
+    curl -s -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
+        -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
+        -d "$1" \
+        "$NTFY_URL/$NTFY_TOPIC"
+}
+
 # Check the config and build accordingly
 $YT_NONROOT && build_yt_nonroot
 $YT_ROOT && build_yt_root
@@ -244,19 +262,11 @@ $YTM_ROOT && build_ytm_root
 if [ $error == 1 ]; then
     echo "There was an error while building!"
     msg="There was an error during the build process! Please take a look at the logs."$'\n'"Timestamp: $timestamp"
-    if $TG_NOTIFICATIONS; then
-        ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "❗❗❗ Build Error ❗❗❗" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
-    fi
-    if $GOTIFY_NOTIFICATIONS; then
-        curl -sX POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
-            -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$msg" -F "priority=5"
-    fi
-    if $NTFY_NOTIFICATIONS; then
-        curl -s -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
-            -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
-            -d "$MESSAGE" \
-            "$NTFY_URL/$NTFY_TOPIC"
-    fi
+
+    $TG_NOTIFICATIONS && telegram_send_msg "$msg"
+    $GOTIFY_NOTIFICATIONS && gotify_send_msg "$msg"
+    $NTFY_NOTIFICATIONS && ntfy_send_msg "$msg"
+
     if [[ $2 != buildonly ]]; then
         mv versions.json versions.json.fail
         mv versions.json.old versions.json
@@ -278,35 +288,22 @@ msg=$(cat versions.json | tail -n+2 | head -n-1 | cut -c3- | sed "s/\"//g" | sed
 
 if $TG_NOTIFICATIONS; then
     echo "Sending messages to telegram"
-    # telegram.sh uses bot account, but it supports formatted messages
-    [[ "$TELEGRAM_TOKEN" == "" || "$TELEGRAM_CHAT" == "" ]] && echo "Please provide valid channel address in the settings!"
-    ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "⚙⚙⚙ Build Details ⚙⚙⚙" -M "$msg"$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
-    [ $microg_updated ] && ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -M "_An update of microg was published._"
+    telegram_send_msg "$msg"
+    [ $microg_updated ] && telegram_send_msg "_An update of microg was published._"
 fi
 
 if $GOTIFY_NOTIFICATIONS; then
     echo "Sending messages to Gotify"
     MESSAGE="$msg"$'\n'"Timestamp: $timestamp"
-    curl -s -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
-        -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$MESSAGE" -F "priority=5"
-
-    MESSAGE="An update of microg was published."
-    [ $microg_updated ] && curl -s -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
-        -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$MESSAGE" -F "priority=5"
+    gotify_send_msg "$MESSAGE"
+    [ $microg_updated ] && gotify_send_msg "An update of microg was published."
 fi
 
 if $NTFY_NOTIFICATIONS; then
     echo "Sending messages to ntfy.sh"
     MESSAGE="$msg"$'\n'"Timestamp: $timestamp"
-    curl -s -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
-        -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
-        -d "$MESSAGE" \
-        "$NTFY_URL/$NTFY_TOPIC"
-    MESSAGE="An update of microg was published."
-    [ $microg_updated ] && curl -s -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
-        -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
-        -d "$MESSAGE" \
-        "$NTFY_URL/$NTFY_TOPIC"
+    ntfy_send_msg "$MESSAGE"
+    [ $microg_updated ] && ntfy_send_msg "An update of microg was published."
 fi
 
 # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
