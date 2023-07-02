@@ -92,6 +92,7 @@ check_flag=false
 # Get inside the working directory
 cd "$WDIR"
 echo "$(date) | Starting check..."
+cp verions.json versions.json.old
 
 # Fetch all the dependencies
 try=0
@@ -253,7 +254,8 @@ if [ $error == 1 ]; then
             -d "$MESSAGE" \
             "$NTFY_URL/$NTFY_TOPIC"
     fi
-    mv versions.json versions.json.bk
+    mv versions.json versions.json.fail
+    mv versions.json.old versions.json
     exit 4
 fi
 
