@@ -7,7 +7,7 @@
 timestamp=$(date '+%s')
 
 # Log everything to a logfile inside logs/
-log_file="$1/logs/$timestamp"
+log_file="$1/logs/$timestamp.log"
 [ -d "$1" ] && mkdir -p "$1/logs" && exec > >(tee "$log_file") 2>&1
 
 # Set working directory and current directory
@@ -239,8 +239,19 @@ $YTM_ROOT && build_ytm_root
 
 if [ $error == 1 ]; then
     echo "There was an error while building!"
+    msg="There was an error during the build process! Please take a look at the logs."$'\n'"Timestamp: $timestamp"
     if $TG_NOTIFICATIONS; then
-        ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "❗❗❗ Build Error ❗❗❗" -M "There was an error during the build process! Please take a look at the logs."$'\n'"Timestamp: $timestamp"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+        ./telegram.sh -t "$TELEGRAM_TOKEN" -c "$TELEGRAM_CHAT" -T "❗❗❗ Build Error ❗❗❗" -M "$msg"$'\n'"⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯"
+    fi
+    if $GOTIFY_NOTIFICATIONS; then
+        curl -X POST "$GOTIFY_URL/message?token=$GOTIFY_TOKEN" \
+            -F "title=⚙⚙⚙ Build Details ⚙⚙⚙" -F "message=$msg" -F "priority=5"
+    fi
+    if $NTFY_NOTIFICATIONS; then
+        curl -H "Icon: https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png" \
+            -H "Title: ⚙⚙⚙ ReVanced Build ⚙⚙⚙" \
+            -d "$MESSAGE" \
+            "$NTFY_URL/$NTFY_TOPIC"
     fi
     mv versions.json versions.json.bk
     exit 4
