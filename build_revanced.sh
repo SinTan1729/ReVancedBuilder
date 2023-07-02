@@ -145,7 +145,7 @@ if [[ $flag == false && $2 != force ]]; then
 fi
 
 # Download required apk files
-"$SDIR/download_apkmirror.sh" "$WDIR" $2
+[[ $2 != buildonly ]] && "$SDIR/download_apkmirror.sh" "$WDIR"
 
 # If the variables are NOT empty, call populate_patches with proper arguments
 [[ ! -z "$excluded_patches" ]] && populate_patches "-e" "$excluded_patches"
