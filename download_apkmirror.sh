@@ -131,5 +131,6 @@ for apk in "${!apks[@]}"; do
 		[ $vers != "null" ] && [[ $(ver_less_than $vers $version) == true || $version == 0 ]] && version=$vers
 	done
 	version_present=$(jq -r ".\"$apk\"" versions.json)
+	[ -z "$version_present" ] && version_present=0
 	[[ $(ver_less_than $version_present $version) == true || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version ($version_present) of "$apk" is already present"
 done
