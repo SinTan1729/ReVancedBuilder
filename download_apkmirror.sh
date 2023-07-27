@@ -32,9 +32,9 @@ req() { wget -nv -O "$2" --header="$WGET_HEADER" "$1"; }
 
 # Returns if $1 is less than $2
 ver_less_than() {
-	[ ${1:0:1} == "v" ] && var1=${1:1} || var1=$1
-	[ ${2:0:1} == "v" ] && var2=${2:1} || var2=$2
-	[ $(echo $var1$'\n'$var2 | sort -V | tail -n1) != $var1 ] && echo true || echo false
+	[[ ${1:0:1} == "v" ]] && var1=${1:1} || var1=$1
+	[[ ${2:0:1} == "v" ]] && var2=${2:1} || var2=$2
+	[[ $(echo $var1$'\n'$var2 | sort -V | tail -n1) != $var1 ]] && echo true || echo false
 }
 
 # Wget download apk
