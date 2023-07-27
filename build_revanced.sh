@@ -95,7 +95,7 @@ echo "$(date) | Starting check..."
 
 if [[ $2 != buildonly ]]; then
     # Create a backup of versions
-    cp verions.json versions.json.old
+    [ -f versions.json ] && cp versions.json versions.json.old
     # Fetch all the dependencies
     try=0
     while :; do
@@ -269,7 +269,7 @@ if [ $error == 1 ]; then
 
     if [[ $2 != buildonly ]]; then
         mv versions.json versions.json.fail
-        mv versions.json.old versions.json
+        [ -f versions.json.old ] && mv versions.json.old versions.json
     fi
     exit 4
 fi
