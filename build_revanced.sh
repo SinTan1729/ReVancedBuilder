@@ -95,7 +95,7 @@ echo "$(date) | Starting check..."
 
 if [[ $2 != buildonly ]]; then
     # Create a backup of versions
-    [ -f versions.json ] && cp versions.json versions.json.old
+    [ -f versions.json ] && cp versions.json versions.json.old || touch versions.json
     # Fetch all the dependencies
     try=0
     while :; do
