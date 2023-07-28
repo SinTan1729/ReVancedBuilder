@@ -114,7 +114,7 @@ if [[ $2 != buildonly ]]; then
         basename=$(echo $repo | cut -d '/' -f2)
         echo "Checking $basename"
         version_present=$(jq -r ".\"$basename\"" versions.json)
-        [ -z "$version_present" ] && version_present=0
+        [[ "$version_present" == "null" ]] && version_present=0
         data="$(jq -r ".tools[] | select((.repository == \"$repo\") and (.content_type | contains(\"archive\")))" latest_versions.json)"
         [[ $name == microg.apk ]] && version=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name') || version=$(echo "$data" | jq -r '.version')
         if [[ $(ver_less_than $version_present $version) == true || ! -f $name || $2 == force ]]; then
