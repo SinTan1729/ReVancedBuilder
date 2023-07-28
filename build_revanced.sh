@@ -95,7 +95,7 @@ echo "$(date) | Starting check..."
 
 if [[ $2 != buildonly ]]; then
     # Create a backup of versions
-    [ -f versions.json ] && cp versions.json versions.json.old || touch versions.json
+    [ -f versions.json ] && cp versions.json versions.json.old || echo "{}" >versions.json
     # Fetch all the dependencies
     try=0
     while :; do
@@ -141,14 +141,14 @@ if [[ $2 != buildonly ]]; then
         if [[ $check_flag == false ]]; then
             echo "Nothing to update"
         else
-            "$SDIR/download_apkmirror.sh" "$WDIR" checkonly
+            "$SDIR/download_apk.sh" "$WDIR" checkonly
         fi
         echo "--------------------"$'\n'"--------------------"
         exit
     fi
 
     # Download required apk files
-    "$SDIR/download_apkmirror.sh" "$WDIR"
+    "$SDIR/download_apk.sh" "$WDIR"
 fi
 
 # If the variables are NOT empty, call populate_patches with proper arguments
