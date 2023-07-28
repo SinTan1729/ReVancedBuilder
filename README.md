@@ -8,6 +8,10 @@ Just run `./build_revanced <working-directory> (force/clean/experimental/checkon
 ```
 
 ## Notes
+- The following programs are needed to run this script. Make sure that you have them in your `$PATH`.
+ ```
+ htmlq jq wget java
+ ```
 - To enable build for a particular apk, copy the `build_settings` file to your working directory and modify it to suit your needs.
 - The script will download the **automatically selected compatible version** (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKMirror, **NOT** latest official version on Google Play.
 - Under **NO CIRCUMSTANCES** any APKs will be uploaded to this repository to avoid DMCA.
