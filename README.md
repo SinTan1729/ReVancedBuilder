@@ -36,7 +36,7 @@ Just run `./build_revanced <working-directory> (force/clean/experimental/checkon
     WantedBy=timers.target
     ```
     and then enable the timer using
-    ```bash
+    ```
     sudo systemctl enable --now revanced-builder.timer
     ```
 
