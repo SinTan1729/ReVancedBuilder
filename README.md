@@ -5,11 +5,11 @@ This repo will allow one to build [ReVanced](https://github.com/revanced/) apps 
 Just run `./build_revanced <working-directory> (force/clean/experimental/checkonly/buildonly)`. Might be a good idea to set it up to run periodically. There are a few ways of doing it.
 1. Just drop it inside `/etc/cron.daily/`.
 1. To make it run at a specific time (6AM in the example) using `cron`, put this in your `crontab`:
-    ```crontab
+    ```
     0 6 * * * <full-script-location> <full-working-directory-location>
     ```
 1. The exact same thing as in 2 can be achieved using `systemd` timers instead. Create the following files.
-    ```toml
+    ```
     /etc/systemd/system/revanced-builder.service
     ---------------------------------------------
     [Unit]
@@ -23,7 +23,7 @@ Just run `./build_revanced <working-directory> (force/clean/experimental/checkon
     Group=<group>
     ExecStart=_JAVA_OPTIONS='-Xmx512m' <full-script-location> <full-working-directory-location>
     ```
-    ```toml
+    ```
     /etc/systemd/system/revanced-builder.timer
     -------------------------------------------
     [Unit]
