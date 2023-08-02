@@ -21,7 +21,8 @@ Just run `./build_revanced <working-directory> (force/clean/experimental/checkon
     Type=oneshot
     User=<user>
     Group=<group>
-    ExecStart=_JAVA_OPTIONS='-Xmx512m' <full-script-location> <full-working-directory-location>
+    Environment="_JAVA_OPTIONS=-Xmx512m"
+    ExecStart=<full-script-location> <full-working-directory-location>
     ```
     ```
     /etc/systemd/system/revanced-builder.timer
