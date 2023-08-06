@@ -156,5 +156,5 @@ for apk in "${!apks[@]}"; do
 	[[ -z "$version_present" || "$version" == "null" ]] && version_present=0
 	[[ "$version" == "0" ]] && version=latest
 
-	[[ $(ver_less_than $version_present $version) == true || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version ($version_present) of "$apk" is already present"
+	[[ "$version_present" != "$version" || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version ($version_present) of "$apk" is already present"
 done
