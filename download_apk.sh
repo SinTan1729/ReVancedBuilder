@@ -83,7 +83,7 @@ dl_yt() {
 	declare -r dl_url=$(dl_apkpure "$version" $appname youtube)
 	echo "YouTube version: $version"
 	echo "downloaded from: [APKMirror - YouTube]($dl_url)"
-	jq ".\"$apk\" = \"$version\"" versions.json >versions.json.tmp && mv versions.json.tmp versions.json
+	jq ".\"$apk\" = \"$version\"" versions.json >versions-tmp.json && mv versions-tmp.json versions-new.json
 }
 
 # Downloading youtube music
@@ -106,7 +106,7 @@ dl_ytm() {
 	dl_apkpure "$version" $appname youtube-music
 	echo "YouTube Music version: $version"
 	echo "downloaded from: [APKMirror - YouTube Music]($dl_url)"
-	jq ".\"$apk\" = \"$version\"" versions.json >versions.json.tmp && mv versions.json.tmp versions.json
+	jq ".\"$apk\" = \"$version\"" versions.json >versions-tmp.json && mv versions-tmp.json versions-new.json
 }
 
 # Get into the build directory

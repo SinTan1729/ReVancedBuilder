@@ -129,7 +129,7 @@ if [[ $2 != buildonly ]]; then
             # shellcheck disable=SC2086,SC2046
             [[ $name == microg.apk ]] && download_link="https://github.com/$repo/releases/latest/download/$name" || download_link="$(echo "$data" | jq -r '.browser_download_url')"
             curl -sLo "$name" "$download_link"
-            jq ".\"$basename\" = \"$version\"" versions-new.json >versions.json.tmp && mv versions.json.tmp versions-new.json
+            jq ".\"$basename\" = \"$version\"" versions-new.json >versions-tmp.json && mv versions-tmp.json versions-new.json
             echo "Upgraded $basename from $version_present to $version"
             flag=true
         fi
