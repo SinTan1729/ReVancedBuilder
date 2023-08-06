@@ -94,8 +94,9 @@ cd "$WDIR"
 echo "$(date) | Starting check..."
 
 if [[ $2 != buildonly ]]; then
-    # Create a backup of versions
-    [ -f versions.json ] && cp versions.json versions.json.old || echo "{}" >versions.json
+    # Create a new versions file, if needed
+    [ -f versions.json ] || echo "{}" >versions.json
+    cp versions.json versions-new.json
     # Fetch all the dependencies
     try=0
     while :; do
@@ -128,7 +129,7 @@ if [[ $2 != buildonly ]]; then
             # shellcheck disable=SC2086,SC2046
             [[ $name == microg.apk ]] && download_link="https://github.com/$repo/releases/latest/download/$name" || download_link="$(echo "$data" | jq -r '.browser_download_url')"
             curl -sLo "$name" "$download_link"
-            jq ".\"$basename\" = \"$version\"" versions.json >versions.json.tmp && mv versions.json.tmp versions.json
+            jq ".\"$basename\" = \"$version\"" versions-new.json >versions.json.tmp && mv versions.json.tmp versions-new.json
             echo "Upgraded $basename from $version_present to $version"
             flag=true
         fi
@@ -268,10 +269,7 @@ if [ $error == 1 ]; then
     $GOTIFY_NOTIFICATIONS && gotify_send_msg "$msg"
     $NTFY_NOTIFICATIONS && ntfy_send_msg "$msg"
 
-    if [[ $2 != buildonly ]]; then
-        mv versions.json versions.json.fail
-        [ -f versions.json.old ] && mv versions.json.old versions.json
-    fi
+    [[ $2 != buildonly ]] && mv versions-new.json versions-fail.json || mv versions-new.json versions.json
     exit 4
 fi
 
