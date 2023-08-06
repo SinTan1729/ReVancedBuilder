@@ -4,7 +4,7 @@
 [ "${BKLOCKER}" != "running" ] && exec env BKLOCKER="running" flock -en "/tmp/revanced-builder.lock" "$0" "$@" || :
 
 # Get timestamp
-timestamp=$(date '+%s')
+timestamp=$(date '+%Y%m%d%H%M%S')
 
 # Log everything to a logfile inside logs/
 log_file="$1/logs/$timestamp.log"
