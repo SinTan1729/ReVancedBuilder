@@ -6,6 +6,14 @@ YTM_NONROOT=true
 YT_ROOT=false
 YTM_ROOT=false
 
+# You can provide versions of apk for the builds
+# If anything nonempty is given, automatic version resolution
+# will be disabled
+# It's your job to make sure that the version is available
+# in APKPure
+YT_VERSION=
+YTM_VERSION=
+
 # Settings for sending Telegram notification using telegram.sh
 # In case you decide to use it, please put valid config in the
 # TOKEN and CHAT fields

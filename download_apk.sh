@@ -16,7 +16,7 @@ source "$1/build_settings"
 WGET_HEADER="User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
 
 # Wget function
-req() { wget -nv -O "$2" --header="$WGET_HEADER" "$1"; }
+req() { wget -nv -4 -O "$2" --header="$WGET_HEADER" "$1"; }
 
 # Returns true if $1 is less than $2
 ver_less_than() {
@@ -30,15 +30,14 @@ dl_apkpure() {
 	version="$1"
 	app="$2"
 	apkpure_appname="$3"
-	best_match="$(apkpure_best_match $version $app $apkpure_appname)"
+	$hard_vers && best_match="$version" || best_match="$(apkpure_best_match $version $app $apkpure_appname)"
 
-	if [[ "$version" == "$best_match" || "$version" == "latest" ]]; then
-		echo "Downloading version $best_match from APKPure"
-	else
-		echo "Unable to get version $version, downloading version $best_match instead"
-	fi
+	# if [[ "$version" == "$best_match" || "$version" == "latest" ]]; then
+	# 	echo "Downloading version $best_match from APKPure"
+	# else
+	# 	echo "Unable to get version $version, downloading version $best_match instead"
+	# fi
 
-	version="$best_match"
 	vers_code="$(req https://apkpure.com/$apkpure_appname/$app/versions - | htmlq --attribute data-dt-versioncode 'a[data-dt-version="'$version'"][data-dt-apkid^="b\/APK\/"]')"
 	url="https://d.apkpure.com/b/APK/$app?versionCode=$vers_code"
 
@@ -68,7 +67,7 @@ apkpure_best_match() {
 # Downloading youtube
 dl_yt() {
 	appname=com.google.android.youtube
-	version="$(apkpure_best_match "$version" $appname youtube)"
+	$hard_vers || version="$(apkpure_best_match "$version" $appname youtube)"
 	if [[ ! $(ver_less_than "$version_present" "$version") && -f $appname.apk ]]; then
 		echo "Version $version is already present"
 		return
@@ -90,7 +89,7 @@ dl_yt() {
 # Downloading youtube music
 dl_ytm() {
 	appname=com.google.android.apps.youtube.music
-	version="$(apkpure_best_match "$version" $appname youtube-music)"
+	$hard_vers || version="$(apkpure_best_match "$version" $appname youtube-music)"
 	if [[ ! $(ver_less_than "$version_present" "$version") && -f $appname.apk ]]; then
 		echo "Version $version is already present"
 		return
@@ -103,7 +102,8 @@ dl_ytm() {
 	echo "Downloading YouTube Music"
 
 	echo "Choosing version '${version}'"
-	declare -r dl_url=$(dl_apkpure "$version" $appname youtube-music)
+	# declare -r dl_url=$(dl_apkpure "$version" $appname youtube-music)
+	dl_apkpure "$version" $appname youtube-music
 	echo "YouTube Music version: $version"
 	echo "downloaded from: [APKMirror - YouTube Music]($dl_url)"
 	jq ".\"$apk\" = \"$version\"" versions.json >versions.json.tmp && mv versions.json.tmp versions.json
@@ -133,17 +133,28 @@ for apk in "${!apks[@]}"; do
 	# Skip if app not specified for build
 	[[ "$apk" == "com.google.android.youtube" && "$YT_NONROOT" == false && "$YT_ROOT" == false ]] && continue
 	[[ "$apk" == "com.google.android.apps.youtube.music" && "$YTM_NONROOT" == false && "$YTM_ROOT" == false ]] && continue
-
 	echo "Checking $apk"
-	supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
-	version=0
-	for vers in $supported_vers; do
-		[ $vers != "null" ] && [[ $(ver_less_than $vers $version) == true || $version == 0 ]] && version=$vers
-	done
+	if [[ "$apk" == "com.google.android.youtube" && "$YT_VERSION" != "" ]]; then
+		version="$YT_VERSION"
+		echo "Using version $version for $apk given in build_settings"
+		hard_vers=true
+	elif [[ "$apk" == "com.google.android.apps.youtube.music" && "$YTM_VERSION" != "" ]]; then
+		version="$YTM_VERSION"
+		echo "Using version $version for $apk given in build_settings"
+		hard_vers=true
+	else
+		echo "Figuring out best version for $apk"
+		supported_vers="$(jq -r '.[].compatiblePackages[] | select(.name == "'$apk'") | .versions | last' patches.json)"
+		version=0
+		for vers in $supported_vers; do
+			[ $vers != "null" ] && [[ $(ver_less_than $vers $version) == true || $version == 0 ]] && version=$vers
+		done
+		hard_vers=false
+	fi
 
 	version_present=$(jq -r ".\"$apk\"" versions.json)
 	[[ -z "$version_present" || "$version" == "null" ]] && version_present=0
 	[[ "$version" == "0" ]] && version=latest
 
-	[[ $(ver_less_than $version_present $version) || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version ($version_present) of "$apk" is already present"
+	[[ $(ver_less_than $version_present $version) == true || ! -f $apk.apk || $2 == force ]] && ${apks[$apk]} || echo "Recommended version ($version_present) of "$apk" is already present"
 done
