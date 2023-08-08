@@ -269,8 +269,10 @@ if [ $error == 1 ]; then
     $GOTIFY_NOTIFICATIONS && gotify_send_msg "$msg"
     $NTFY_NOTIFICATIONS && ntfy_send_msg "$msg"
 
-    [[ $2 != buildonly ]] && mv versions-new.json versions-fail.json || mv versions-new.json versions.json
+    [[ $2 != buildonly ]] && mv versions-new.json versions-fail.json || rm versions-new.json
     exit 4
+else
+    mv versions-new.json versions.json
 fi
 
 if $TG_UPLOAD; then
