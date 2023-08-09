@@ -8,9 +8,9 @@ import json
 from packaging.version import Version
 from APKPure_dl import *
 from JAVABuilder import *
+from datetime import datetime
 
 # TODO: Logging
-# TODO: Timestamp
 # TODO: Notifications
 # TODO: Notification for errors (maybe by writing custom exit function? Exit function should also cleanup output files. printerr?)
 # TODO: Moving files in proper locations
@@ -70,6 +70,48 @@ def update_microg():
                 present_vers.update({'VancedMicroG': str(latest_ver)})
                 print("Done!")
 
+# Move apps to proper location
+def move_apps():
+    try:
+        os.mkdir('archive')
+    except FileExistsError:
+        pass
+
+    for app in build_config:
+        if not build_config[app].getboolean('build'):
+            continue
+        name = build_config[app]['output_name']
+        final_name = f"{name}_{timestamp}.apk"
+
+        try:
+            os.rename(name+'.apk', 'archive/'+final_name)
+        except FileNotFoundError:
+            pass
+            # sys.exit('There was an error moving the final apk files!')
+        
+        files = []
+        dir = os.scandir('archive')
+        for f in dir:
+            if name in f.name:
+                files.append(f)
+        files.sort(key=lambda f: f.stat().st_ctime)
+        files.reverse()
+        for f in files[3:]:
+            os.remove(f)
+            print('Deleted old build '+f.name)
+        dir.close()
+                
+
+
+# ------------------------------
+# The main function starts here
+# ------------------------------
+
+# Get a timestamp
+time = datetime.now()
+timestamp = time.strftime('%Y%m%d%H%M%S')
+print(f"Started building ReVanced apps at {time.strftime('%d %B, %Y %H:%M:%S')}")
+
 # Read configs
 try:
     os.chdir(sys.argv[1])
@@ -88,6 +130,8 @@ try:
     build_config.read_file(open('build_config.toml', 'r'))
 except FileNotFoundError:
     sys.exit('No build config provided, exiting. Please look at the GitHub page for more information:\n  https://github.com/SinTan1729/ReVancedBuilder')
+
+move_apps()
 
 notification_config = cp.ConfigParser()
 notification_config.read('notification_config.toml')
@@ -117,6 +161,7 @@ if flag != 'buildonly':
 
 if (flag != 'checkonly' and not up_to_date) or flag in ['force', 'buildonly']:
     build_apps(build_config, flag)
+    move_apps()
 
 # Update version numbers in the versions.json file
 if up_to_date and flag != 'buildonly':
