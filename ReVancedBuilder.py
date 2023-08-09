@@ -7,6 +7,15 @@ import requests as req
 import json
 from packaging.version import Version
 from APKPure_dl import *
+from JAVABuilder import *
+
+# TODO: Logging
+# TODO: Timestamp
+# TODO: Notifications
+# TODO: Notification for errors (maybe by writing custom exit function? Exit function should also cleanup output files. printerr?)
+# TODO: Moving files in proper locations
+# TODO: Run post_script (preferably in any language)
+# TODO: README
 
 # Update the ReVanced tools, if needed
 def update_tools():
@@ -19,11 +28,11 @@ def update_tools():
         except KeyError:
             present_ver = Version('0')
 
-        if present_ver < latest_ver:
+        output_file = item+os.path.splitext(tool['name'])[1]
+        if  flag == 'force' or not os.path.isfile(output_file) or present_ver < latest_ver:
             global up_to_date
             up_to_date = False
             print(f"{item} has an update ({str(present_ver)} -> {str(latest_ver)})")
-            output_file = item.split('-')[1]+os.path.splitext(tool['name'])[1]
             if flag != 'checkonly':
                 print(f"Downloading {output_file}...")
                 res = req.get(tool['browser_download_url'], stream=True)
@@ -47,12 +56,12 @@ def update_microg():
     except KeyError:
         present_ver = Version('0')
 
-    if present_ver < latest_ver:
+    if flag == 'force' or not os.path.isfile('microg.apk') or present_ver < latest_ver:
             global up_to_date
             up_to_date = False
             print(f"Vanced microG has an update ({str(present_ver)} -> {str(latest_ver)})")
             if flag != 'checkonly':
-                print(f"Downloading microg.apk...")
+                print(f"Downloading vanced-microg.apk...")
                 res = req.get('https://github.com/inotia00/VancedMicroG/releases/latest/download/microg.apk', stream=True)
                 res.raise_for_status()
                 with open('microg.apk', 'wb') as f:
@@ -103,15 +112,15 @@ up_to_date = True
 if flag != 'buildonly':
     update_tools()
     update_microg()
-    # if not up_to_date:
-    present_vers = get_apks(present_vers, build_config)
+    if not up_to_date or flag == 'force':
+        present_vers = get_apks(present_vers, build_config, flag)
 
-# if (flag != 'checkonly' and not up_to_date) or flag == 'force':
-#     build_apps()
+if (flag != 'checkonly' and not up_to_date) or flag in ['force', 'buildonly']:
+    build_apps(build_config, flag)
 
 # Update version numbers in the versions.json file
-if up_to_date:
+if up_to_date and flag != 'buildonly':
     print('There\'s nothing to do.')
-elif flag != 'checkonly':
+elif flag not in ['checkonly',  'buildonly']:
     with open('versions.json', 'w') as f:
         json.dump(present_vers, f, indent=4)

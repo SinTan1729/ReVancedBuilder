@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 from packaging.version import Version
@@ -5,27 +6,32 @@ import requests as req
 from bs4 import BeautifulSoup as bs
 
 # Determine the best version available to download
-def apkpure_best_match(apk, appname, version, session):
-    res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
-    res.raise_for_status()
-    data = bs(res.text, 'html.parser')
+def apkpure_best_match(version, soup):
     try:
-        vers_list = [Version(x['data-dt-version']) for x in data.css.select(f"a[data-dt-apkid^=\"b/APK/\"]")]
+        vers_list = [Version(x['data-dt-version']) for x in soup.css.select(f"a[data-dt-apkid^=\"b/APK/\"]")]
     except:
         sys.exit(f"    There was some error getting list of versions of {apk}...")
     
     if version != '0':
         vers_list = filter(lambda x: x <= Version(version), vers_list)
     
-    return max(vers_list)
+    return str(max(vers_list))
 
 # Download an apk from APKPure.com
-def apkpure_dl(apk, appname, version, hard_version, session, present_vers):
+def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag):
+    res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
+    res.raise_for_status()
+    soup = bs(res.text, 'html.parser')
+
     if not hard_version:
-        version = apkpure_best_match(apk, appname, version, session)
+        version = apkpure_best_match(version, soup)
+    
+    if flag == 'checkonly' and present_vers[apk] != version:
+        print(f"{apk} has an update ({present_vers[apk]} -> {version})")
+        return
 
     try:
-        if present_vers[apk] == version:
+        if present_vers[apk] == version and flag != 'force' and os.path.isfile(apk):
             print(f"Recommended version {version} of {apk} is already present.")
             return
     except KeyError:
@@ -33,17 +39,14 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers):
     print(f"  Downloading {apk} version {version}...")
 
     # Get the version code
-    res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
-    res.raise_for_status()
-    data = bs(res.text, 'html.parser')
     try:
-        ver_code = data.css.select(f"a[data-dt-version=\"{version}\"][data-dt-apkid^=\"b/APK/\"]")[0]['data-dt-versioncode']
+        ver_code = soup.css.select(f"a[data-dt-version=\"{version}\"][data-dt-apkid^=\"b/APK/\"]")[0]['data-dt-versioncode']
     except:
         sys.exit(f"    There was some error while downloading {apk}...")
     
     res = session.get(f"https://d.apkpure.com/b/APK/{apk}?versionCode={ver_code}", stream=True)
     res.raise_for_status()
-    with open(apk, 'wb') as f:
+    with open(apk+'.apk', 'wb') as f:
         for chunk in res.iter_content(chunk_size=8192):
             f.write(chunk)
     print("    Done!")
@@ -51,7 +54,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers):
 
 
 # Download apk files, if needed
-def get_apks(present_vers, build_config):
+def get_apks(present_vers, build_config, flag):
     print('Downloading required apk files from APKPure...')
 
     # Get latest patches using the ReVanced API
@@ -67,14 +70,15 @@ def get_apks(present_vers, build_config):
         # Check if we need to build an app
         if not build_config[app].getboolean('build'):
             continue
-        print(f"Checking {app}...")
 
         try:
             apk = build_config[app]['apk']
+            pretty_name = build_config[app]['pretty_name']
             apkpure_appname = build_config[app]['apkpure_appname']
         except:
             sys.exit(f"Invalid config for {app} in build_config.toml!")
 
+        print(f"Checking {pretty_name}...")
         try:
             required_ver = build_config[app]['version']
             required_ver[0]
@@ -96,7 +100,7 @@ def get_apks(present_vers, build_config):
             else:
                 required_ver = min(map(lambda x: Version(x), compatible_vers))
 
-        apkpure_dl(apk, apkpure_appname, str(required_ver), hard_version, session, present_vers)
+        apkpure_dl(apk, apkpure_appname, str(required_ver), hard_version, session, present_vers, flag)
 
         present_vers.update({apk: str(required_ver)})
     return present_vers
