@@ -1,0 +1,4 @@
+requests
+semver
+packaging
+bs4
