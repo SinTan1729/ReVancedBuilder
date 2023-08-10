@@ -39,7 +39,7 @@ def move_apps(appstate):
 
         # Delete logs older than 7 days
         with os.scandir('logs') as dir:
-            now = time.now()
+            now = time.time()
             for f in dir:
                 if f.stat().st_ctime < now - 7 * 86400:
                     os.remove(f)

@@ -32,7 +32,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag)
         return
 
     try:
-        if present_vers[apk] == version and flag != 'force' and os.path.isfile(apk):
+        if present_vers[apk] == version and flag != 'force' and os.path.isfile(apk+'.apk'):
             print(f"Recommended version {version} of {apk} is already present.")
             return
     except KeyError:

@@ -17,6 +17,7 @@ import subprocess
 # TODO: README
 # TODO: PATCHES_GUIDE.md (maybe delete it?)
 # TODO: Install using pip
+# TODO: Do not download twice for root and nonroot
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):

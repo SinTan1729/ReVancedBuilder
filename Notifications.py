@@ -18,6 +18,12 @@ def send_notif(appstate, error=False):
         msg = json.dumps(present_vers, indent=0)
         msg = re.sub('("|\{|\}|,)', '', msg).strip('\n')
 
+        msg = msg.replace('revanced-', 'ReVanced ')
+        msg = msg.replace('cli', 'CLI')
+        msg = msg.replace('integrations', 'Integrations')
+        msg = msg.replace('patches', 'Patches')
+        msg = msg.replace('VancedMicroG', 'Vanced microG')
+
         for app in build_config:
             if not build_config[app].getboolean('build'):
                 continue
