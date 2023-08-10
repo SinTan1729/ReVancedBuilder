@@ -7,8 +7,9 @@ import os
 import sys
 import configparser as cp
 import json
-from Cleanup import clean_exit
 import subprocess
+
+from ReVancedBuilder.Cleanup import clean_exit
 
 # Build the revanced apps
 def build_apps(appstate):

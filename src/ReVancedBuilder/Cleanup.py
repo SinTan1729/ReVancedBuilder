@@ -5,8 +5,9 @@
 
 import os
 import sys
-from Notifications import send_notif
 import time
+
+from ReVancedBuilder.Notifications import send_notif
 
 # Move apps to proper location
 def move_apps(appstate):
@@ -63,4 +64,4 @@ def clean_exit(msg, appstate, code=1):
         
     # Delete the lockfile
     os.remove('lockfile')
-    exit(code)
+    sys.exit(code)

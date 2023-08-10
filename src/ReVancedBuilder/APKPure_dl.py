@@ -6,10 +6,12 @@
 import os
 import sys
 import json
+
 from packaging.version import Version
 import requests as req
 from bs4 import BeautifulSoup as bs
-from Cleanup import clean_exit
+
+from ReVancedBuilder.Cleanup import clean_exit
 
 # Determine the best version available to download
 def apkpure_best_match(version, soup):

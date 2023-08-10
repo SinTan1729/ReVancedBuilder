@@ -6,20 +6,21 @@
 import sys
 import os
 import configparser as cp
-import requests as req
 import json
-from packaging.version import Version
-from APKPure_dl import *
-from JAVABuilder import *
-from datetime import datetime
-from Notifications import send_notif
-from Cleanup import *
 import logging
 import subprocess
 
+import requests as req
+from packaging.version import Version
+from datetime import datetime
+
+from ReVancedBuilder.APKPure_dl import apkpure_best_match, apkpure_dl, get_apks
+from ReVancedBuilder.JAVABuilder import build_apps
+from ReVancedBuilder.Notifications import send_notif
+from ReVancedBuilder.Cleanup import move_apps, clean_exit
+
 # TODO: README
 # TODO: PATCHES_GUIDE.md (maybe delete it?)
-# TODO: Install using pip
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
@@ -92,9 +93,9 @@ appstate['timestamp'] = time.strftime('%Y%m%d%H%M%S')
 try:
     os.chdir(sys.argv[1])
 except IndexError:
-    clean_exit('Please provide a working directory as argument!', appstate)
+    sys.exit('Please provide a working directory as argument!')
 except FileNotFoundError:
-    clean_exit('Invalid working directory provided!', appstate)
+    sys.exit('Invalid working directory provided!')
 
 # Try to make sure only one instance is running in a given working directory
 try:
