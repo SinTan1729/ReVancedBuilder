@@ -17,6 +17,7 @@ from Cleanup import *
 # TODO: Run post_script (preferably in any language)
 # TODO: README
 # TODO: PATCHES_GUIDE.md (maybe delete it?)
+# TODO: Make it PIP installable
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
@@ -70,6 +71,7 @@ def update_microg(appstate):
                         f.write(chunk)
                 appstate['present_vers'].update({'VancedMicroG': str(latest_ver)})
                 print("Done!")
+                appstate['microg_updated'] = True
 
     return appstate
 
@@ -100,6 +102,7 @@ except:
     flag = None
 
 appstate['flag'] = flag
+appstate['microg_updated'] = False
 
 try:
     appstate['build_config']=cp.ConfigParser()

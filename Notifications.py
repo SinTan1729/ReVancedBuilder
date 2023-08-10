@@ -1,6 +1,7 @@
 import json
 import re
 import requests as req
+import subprocess
 
 def send_notif(appstate, error=False):
     timestamp = appstate['timestamp']
@@ -21,6 +22,8 @@ def send_notif(appstate, error=False):
             msg = msg.replace(build_config[app]['apk'], build_config[app]['pretty_name'])
 
         msg += '\nTimestamp: ' + timestamp
+        if appstate['microg_updated']:
+            msg += '\nVanced microG was updated.'
 
     config = appstate['notification_config']
     for entry in config:
@@ -30,7 +33,7 @@ def send_notif(appstate, error=False):
 
         match entry:
             case 'ntfy':
-                print('Sending notification through nfty.sh')
+                print('Sending notification through ntfy.sh...')
                 try:
                     url = config[entry]['url']
                     topic = config[entry]['topic']
@@ -45,7 +48,7 @@ def send_notif(appstate, error=False):
                     print('Failed!' + str(e))
 
             case 'gotify':
-                print('Sending notification through nfty.sh')
+                print('Sending notification through Gotify...')
                 try:
                     url = config[entry]['url']
                     token = config[entry]['token']
@@ -60,16 +63,16 @@ def send_notif(appstate, error=False):
 
             case 'telegram':
                 # TODO: Finish this!
-                print('Sending notification through telegram')
+                print('Sending notification through Telegram...')
                 try:
                     chat = config[entry]['chat']
                     token = config[entry]['token']
                 except:
                     print('CHAT or TOKEN not provided!')
                     continue
-                data = {'Title': encoded_title, 'message': msg, 'priority': '5'}
+                cmd = f"./telegram.sh -t {token} -c {chat} -T {encoded_title} -M \"{msg}\""
                 try:
-                    req.post(f"{url}/message?token={token}", data)
+                    subprocess.run(cmd, shell=True)
                 except Exception as e:
                     print('Failed!' + str(e))
 

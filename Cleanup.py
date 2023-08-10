@@ -23,6 +23,7 @@ def move_apps(appstate):
             pass
             # sys.exit('There was an error moving the final apk files!')
         
+        # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
         files = []
         dir = os.scandir('archive')
         for f in dir:
