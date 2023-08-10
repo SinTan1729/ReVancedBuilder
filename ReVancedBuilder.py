@@ -14,7 +14,6 @@ from Cleanup import *
 import logging
 import subprocess
 
-# TODO: Run post_script (preferably in any language)
 # TODO: README
 # TODO: PATCHES_GUIDE.md (maybe delete it?)
 # TODO: Lockfile
@@ -93,6 +92,17 @@ except IndexError:
     clean_exit('Please provide a working directory as argument!', appstate)
 except FileNotFoundError:
     clean_exit('Invalid working directory provided!', appstate)
+
+# Try to make sure only one instance is running in a given working directory
+try:
+    if os.path.exists('lockfile'):
+        raise FileExistsError
+    with open('tmplockfile', 'x') as f:
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace('tmplockfile', 'lockfile')
+except FileExistsError:
+    sys.exit('Another instance is already running in the same working directory!')
 
 # Set up logging
 try:
@@ -173,3 +183,6 @@ elif flag != ['checkonly']:
             subprocess.run(f"{appstate['build_config']['post_script']['file']} {timestamp}", shell=True)
         except:
             pass
+
+# Delete the lockfile
+os.remove('lockfile')

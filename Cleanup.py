@@ -55,4 +55,7 @@ def clean_exit(msg, appstate, code=1):
     
     if msg:
         print(msg)
+        
+    # Delete the lockfile
+    os.remove('lockfile')
     exit(code)
