@@ -34,7 +34,7 @@ root = false
 # Timestamp and extension will be added automatically
 output_name = YouTube_Music_ReVanced_nonroot
 keystore = revanced-ytm-nonroot.keystore
-version = 6.10.52
+# version = version
 
 [youtube_music_root]
 build = false
@@ -45,7 +45,7 @@ root = true
 # Timestamp and extension will be added automatically
 output_name = YouTube_Music_ReVanced_root
 keystore = revanced-ytm-root.keystore
-version = 6.10.52
+# version = version
 
 [post_script]
 # file = post_script.sh
