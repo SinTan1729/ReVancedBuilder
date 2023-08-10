@@ -190,3 +190,5 @@ elif flag != ['checkonly']:
 
 # Delete the lockfile
 os.remove('lockfile')
+
+sys.exit(0)
