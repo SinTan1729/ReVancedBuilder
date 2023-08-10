@@ -12,11 +12,12 @@ from datetime import datetime
 from Notifications import send_notif
 from Cleanup import *
 import logging
+import subprocess
 
 # TODO: Run post_script (preferably in any language)
 # TODO: README
 # TODO: PATCHES_GUIDE.md (maybe delete it?)
-# TODO: Make it PIP installable
+# TODO: Lockfile
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
@@ -168,3 +169,7 @@ elif flag != ['checkonly']:
     if flag != 'buildonly':
         with open('versions.json', 'w') as f:
             json.dump(appstate['present_vers'], f, indent=4)
+        try:
+            subprocess.run(f"{appstate['build_config']['post_script']['file']} {timestamp}", shell=True)
+        except:
+            pass
