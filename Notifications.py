@@ -1,0 +1,77 @@
+import json
+import re
+import requests as req
+
+def send_notif(appstate, error=False):
+    timestamp = appstate['timestamp']
+    if error:
+        msg = f"There was an error during build! Please check the logs.\nTimestamp: {timestamp}"
+    else:
+        notification_config = appstate['notification_config']
+        build_config = appstate['build_config']
+        present_vers = appstate['present_vers']
+        flag = appstate['flag']
+
+        msg = json.dumps(present_vers, indent=0)
+        msg = re.sub('("|\{|\}|,)', '', msg).strip('\n')
+
+        for app in build_config:
+            if not build_config[app].getboolean('build'):
+                continue
+            msg = msg.replace(build_config[app]['apk'], build_config[app]['pretty_name'])
+
+        msg += '\nTimestamp: ' + timestamp
+
+    config = appstate['notification_config']
+    for entry in config:
+        if not config[entry].getboolean('enabled'):
+            continue
+        encoded_title = '⚙⚙⚙ ReVanced Build ⚙⚙⚙'.encode('utf-8')
+
+        match entry:
+            case 'ntfy':
+                print('Sending notification through nfty.sh')
+                try:
+                    url = config[entry]['url']
+                    topic = config[entry]['topic']
+                except:
+                    print('URL or TOPIC not provided!')
+                    continue
+                headers = {'Icon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png',
+                            'Title': encoded_title}
+                try:
+                    req.post(f"{url}/{topic}", msg, headers=headers)
+                except Exception as e:
+                    print('Failed!' + str(e))
+
+            case 'gotify':
+                print('Sending notification through nfty.sh')
+                try:
+                    url = config[entry]['url']
+                    token = config[entry]['token']
+                except:
+                    print('URL or TOKEN not provided!')
+                    continue
+                data = {'Title': encoded_title, 'message': msg, 'priority': '5'}
+                try:
+                    req.post(f"{url}/message?token={token}", data)
+                except Exception as e:
+                    print('Failed!' + str(e))
+
+            case 'telegram':
+                # TODO: Finish this!
+                print('Sending notification through telegram')
+                try:
+                    chat = config[entry]['chat']
+                    token = config[entry]['token']
+                except:
+                    print('CHAT or TOKEN not provided!')
+                    continue
+                data = {'Title': encoded_title, 'message': msg, 'priority': '5'}
+                try:
+                    req.post(f"{url}/message?token={token}", data)
+                except Exception as e:
+                    print('Failed!' + str(e))
+
+            case _:
+                print('Don\'t know how to send notifications to ' + entry)

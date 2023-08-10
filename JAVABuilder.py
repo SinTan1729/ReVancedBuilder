@@ -3,9 +3,13 @@ import sys
 import configparser as cp
 import json
 import subprocess
+from Cleanup import clean_exit
 
 # Build the revanced apps
-def build_apps(build_config, flag):
+def build_apps(appstate):
+    build_config = appstate['build_config']
+    flag = appstate['flag']
+
     chosen_patches = cp.ConfigParser()
     chosen_patches.read('chosen_patches.toml')
 
@@ -55,7 +59,7 @@ def build_apps(build_config, flag):
             apkpure_appname = build_config[app]['apkpure_appname']
             output_name = build_config[app]['output_name']
         except:
-            sys.exit(f"Invalid config for {app} in build_config.toml!")
+            clean_exit(f"Invalid config for {app} in build_config.toml!", appstate)
         
         cmd += f" -a {apk}.apk -o {output_name}.apk"
 
@@ -64,15 +68,13 @@ def build_apps(build_config, flag):
         else:
             print(f"Building {pretty_name} (nonroot)...")
         
-        # if os.system(cmd) != 0:
-        #     sys.exit('There was an error while building!')
         try:
-            output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, text=True)
+            output = subprocess.run(cmd, shell=True)
         except Exception as e:
-            sys.exit(f"There was an error while building! {e.output}")
+            clean_exit(f"There was an error while building {pretty_name}!", appstate)
         
         try:
             os.rename(output_name+'.apk', output_name+'.apk') # TODO: Add timestamp here
         except FileNotFoundError:
-            sys.exit(f"There was an error while building {pretty_name}!")
+            clean_exit(f"There was an error while building {pretty_name}!", appstate)
         
