@@ -19,9 +19,6 @@ from ReVancedBuilder.JAVABuilder import build_apps
 from ReVancedBuilder.Notifications import send_notif
 from ReVancedBuilder.Cleanup import move_apps, clean_exit
 
-# TODO: README
-# TODO: PATCHES_GUIDE.md (maybe delete it?)
-
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
     for item in ['revanced-cli', 'revanced-integrations', 'revanced-patches']:

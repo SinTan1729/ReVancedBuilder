@@ -75,7 +75,6 @@ def send_notif(appstate, error=False):
                     print('Failed!' + str(e))
 
             case 'telegram':
-                # TODO: Finish this!
                 print('Sending notification through Telegram...')
                 try:
                     chat = config[entry]['chat']

@@ -85,7 +85,7 @@ def build_apps(appstate):
             clean_exit(f"There was an error while building {pretty_name}!\n{e}", appstate)
         
         try:
-            os.rename(output_name+'.apk', output_name+'.apk') # TODO: Add timestamp here
+            os.rename(output_name+'.apk', output_name+'.apk')
         except FileNotFoundError:
             clean_exit(f"There was an error while building {pretty_name}!", appstate)
         
