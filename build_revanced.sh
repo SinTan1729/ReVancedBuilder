@@ -272,6 +272,7 @@ if [ $error == 1 ]; then
     [[ $2 != buildonly ]] && mv versions-new.json versions-fail.json || rm versions-new.json
     exit 4
 else
+    mv versions.json versions-old.json
     mv versions-new.json versions.json
 fi
 
