@@ -18,7 +18,7 @@ def build_apps(appstate):
     print = appstate['logger'].info
 
     chosen_patches = cp.ConfigParser()
-    chosen_patches.read('chosen_patches.toml')
+    chosen_patches.read('chosen_patches')
 
     try:
         included_patches = json.loads(chosen_patches['patches']['included'])
@@ -66,7 +66,7 @@ def build_apps(appstate):
             apkpure_appname = build_config[app]['apkpure_appname']
             output_name = build_config[app]['output_name']
         except:
-            clean_exit(f"Invalid config for {app} in build_config.toml!", appstate)
+            clean_exit(f"Invalid config for {app} in build_config!", appstate)
         
         cmd += f" -a {apk}.apk -o {output_name}.apk"
 

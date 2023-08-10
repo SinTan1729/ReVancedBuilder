@@ -88,7 +88,7 @@ def get_apks(appstate):
             pretty_name = build_config[app]['pretty_name']
             apkpure_appname = build_config[app]['apkpure_appname']
         except:
-            clean_exit(f"Invalid config for {app} in build_config.toml!", appstate)
+            clean_exit(f"Invalid config for {app} in build_config!", appstate)
 
         print(f"Checking {pretty_name}...")
         try:

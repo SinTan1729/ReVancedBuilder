@@ -135,12 +135,12 @@ print('----------------------------------------------------------------------')
 # Read configs
 try:
     appstate['build_config']=cp.ConfigParser()
-    appstate['build_config'].read_file(open('build_config.toml', 'r'))
+    appstate['build_config'].read_file(open('build_config', 'r'))
 except FileNotFoundError:
     clean_exit('No build config provided, exiting. Please look at the GitHub page for more information:\n  https://github.com/SinTan1729/ReVancedBuilder', appstate)
 
 appstate['notification_config'] = cp.ConfigParser()
-appstate['notification_config'].read('notification_config.toml')
+appstate['notification_config'].read('notification_config')
 
 # Pull the latest information using the ReVanced API
 try:
