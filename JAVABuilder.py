@@ -2,13 +2,14 @@ import os
 import sys
 import configparser as cp
 import json
-import subprocess
 from Cleanup import clean_exit
+import subprocess
 
 # Build the revanced apps
 def build_apps(appstate):
     build_config = appstate['build_config']
     flag = appstate['flag']
+    print = appstate['logger'].info
 
     chosen_patches = cp.ConfigParser()
     chosen_patches.read('chosen_patches.toml')
@@ -69,9 +70,13 @@ def build_apps(appstate):
             print(f"Building {pretty_name} (nonroot)...")
         
         try:
-            output = subprocess.run(cmd, shell=True)
+            with subprocess.Popen(cmd, shell=True, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout as output:
+                for line in output:
+                    line_utf = line.decode('utf-8').strip('\n')
+                    if line_utf:
+                        print(line_utf)
         except Exception as e:
-            clean_exit(f"There was an error while building {pretty_name}!", appstate)
+            clean_exit(f"There was an error while building {pretty_name}!\n{e}", appstate)
         
         try:
             os.rename(output_name+'.apk', output_name+'.apk') # TODO: Add timestamp here

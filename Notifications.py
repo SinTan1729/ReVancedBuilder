@@ -4,7 +4,9 @@ import requests as req
 import subprocess
 
 def send_notif(appstate, error=False):
+    print = appstate['logger'].info
     timestamp = appstate['timestamp']
+
     if error:
         msg = f"There was an error during build! Please check the logs.\nTimestamp: {timestamp}"
     else:
@@ -72,9 +74,13 @@ def send_notif(appstate, error=False):
                     continue
                 cmd = f"./telegram.sh -t {token} -c {chat} -T {encoded_title} -M \"{msg}\""
                 try:
-                    subprocess.run(cmd, shell=True)
+                    with subprocess.Popen(cmd, shell=True, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout as output:
+                        for line in output:
+                            line_utf = line.decode('utf-8').strip('\n')
+                            if line_utf:
+                                print(line_utf)
                 except Exception as e:
-                    print('Failed!' + str(e))
+                    clean_exit(f"Failed!\n{e}", appstate)
 
             case _:
                 print('Don\'t know how to send notifications to ' + entry)

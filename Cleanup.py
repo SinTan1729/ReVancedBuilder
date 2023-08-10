@@ -1,10 +1,12 @@
 import os
 import sys
 from Notifications import send_notif
+import time
 
 # Move apps to proper location
 def move_apps(appstate):
     build_config = appstate['build_config']
+    print = appstate['logger'].info
 
     try:
         os.mkdir('archive')
@@ -24,20 +26,33 @@ def move_apps(appstate):
             # sys.exit('There was an error moving the final apk files!')
         
         # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
-        files = []
-        dir = os.scandir('archive')
-        for f in dir:
-            if name in f.name:
-                files.append(f)
-        files.sort(key=lambda f: f.stat().st_ctime)
-        files.reverse()
-        for f in files[3:]:
-            os.remove(f)
-            print('Deleted old build '+f.name)
-        dir.close()
+        with os.scandir('archive') as dir:
+            files = []
+            for f in dir:
+                if name in f.name:
+                    files.append(f)
+            files.sort(key=lambda f: f.stat().st_ctime)
+            files.reverse()
+            for f in files[3:]:
+                os.remove(f)
+                print('Deleted old build '+f.name)
+
+        # Delete logs older than 7 days
+        with os.scandir('logs') as dir:
+            now = time.now()
+            for f in dir:
+                if f.stat().st_ctime < now - 7 * 86400:
+                    os.remove(f)
 
 def clean_exit(msg, appstate, code=1):
-    send_notif(appstate, error=True)
+    print = appstate['logger'].info
+
+    try:
+        appstate['notification_config']
+        send_notif(appstate, error=True)
+    except:
+        pass
+    
     if msg:
-        print(msg, file=sys.stderr)
+        print(msg)
     exit(code)

@@ -11,9 +11,8 @@ from JAVABuilder import *
 from datetime import datetime
 from Notifications import send_notif
 from Cleanup import *
+import logging
 
-# TODO: Logging
-# TODO: Notifications
 # TODO: Run post_script (preferably in any language)
 # TODO: README
 # TODO: PATCHES_GUIDE.md (maybe delete it?)
@@ -85,10 +84,8 @@ appstate = {}
 # Get a timestamp
 time = datetime.now()
 appstate['timestamp'] = time.strftime('%Y%m%d%H%M%S')
-print(f"Started building ReVanced apps at {time.strftime('%d %B, %Y %H:%M:%S')}")
-print('----------------------------------------------------------------------')
 
-# Read configs
+# Read arguments
 try:
     os.chdir(sys.argv[1])
 except IndexError:
@@ -96,14 +93,34 @@ except IndexError:
 except FileNotFoundError:
     clean_exit('Invalid working directory provided!', appstate)
 
+# Set up logging
+try:
+    os.mkdir('logs')
+except FileExistsError:
+    pass
+
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger()
+logger.addHandler(logging.FileHandler(f"logs/{appstate['timestamp']}.log", 'w'))
+print = logger.info
+appstate['logger'] = logger
+
+# Get the flag
 try:
     flag = sys.argv[2]
 except:
     flag = None
 
+if flag not in ['buildonly', 'checkonly', 'force', 'experimental']:
+        clean_exit(f"Unknown flag: {flag}", appstate)
+
 appstate['flag'] = flag
 appstate['microg_updated'] = False
 
+print(f"Started building ReVanced apps at {time.strftime('%d %B, %Y %H:%M:%S')}")
+print('----------------------------------------------------------------------')
+
+# Read configs
 try:
     appstate['build_config']=cp.ConfigParser()
     appstate['build_config'].read_file(open('build_config.toml', 'r'))
