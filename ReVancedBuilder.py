@@ -16,7 +16,7 @@ import subprocess
 
 # TODO: README
 # TODO: PATCHES_GUIDE.md (maybe delete it?)
-# TODO: Lockfile
+# TODO: Install using pip
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
@@ -122,7 +122,7 @@ try:
 except:
     flag = None
 
-if flag not in ['buildonly', 'checkonly', 'force', 'experimental']:
+if flag not in ['buildonly', 'checkonly', 'force', 'experimental', None]:
         clean_exit(f"Unknown flag: {flag}", appstate)
 
 appstate['flag'] = flag
