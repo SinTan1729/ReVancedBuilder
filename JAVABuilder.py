@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2023 Sayantan Santra <sayantan.santra@ou.edu>
+# SPDX-License-Identifier: GPL-3.0-only
+
 import os
 import sys
 import configparser as cp
