@@ -1,4 +1,6 @@
 # Revanced Builder
+## Warning: This branch of this script is no longer maintained. It'll probably break at some point in the future. I do not intend to fix it when it does. If someone wants to open a PR however, it'll be welcome. The `main` branch is a rewrite of this is python, and everyone is encouraged to use that instead.
+
 This repo will allow one to build [ReVanced](https://github.com/revanced/) apps automatically and post it to a telegram channel to access and possibly share the builds with friends. It uses [Gotify](https://gotify.net), [ntfy.sh](https://ntfy.sh) or [telegram.sh](https://github.com/fabianonline/telegram.sh) to send messages and [telegram-upload](https://github.com/Nekmo/telegram-upload) to upload files (optionally, disabled out by default). Make sure that `Java >=17` is installed and selected as default.
 
 ## How to use
