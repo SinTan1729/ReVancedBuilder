@@ -44,53 +44,52 @@ def send_notif(appstate, error=False):
             continue
         encoded_title = '⚙⚙⚙ ReVanced Build ⚙⚙⚙'.encode('utf-8')
 
-        match entry:
-            case 'ntfy':
-                print('Sending notification through ntfy.sh...')
-                try:
-                    url = config[entry]['url']
-                    topic = config[entry]['topic']
-                except:
-                    print('URL or TOPIC not provided!')
-                    continue
-                headers = {'Icon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png',
-                            'Title': encoded_title}
-                try:
-                    req.post(f"{url}/{topic}", msg, headers=headers)
-                except Exception as e:
-                    print('Failed!' + str(e))
+        if entry == 'ntfy':
+            print('Sending notification through ntfy.sh...')
+            try:
+                url = config[entry]['url']
+                topic = config[entry]['topic']
+            except:
+                print('URL or TOPIC not provided!')
+                continue
+            headers = {'Icon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png',
+                        'Title': encoded_title}
+            try:
+                req.post(f"{url}/{topic}", msg, headers=headers)
+            except Exception as e:
+                print('Failed!' + str(e))
 
-            case 'gotify':
-                print('Sending notification through Gotify...')
-                try:
-                    url = config[entry]['url']
-                    token = config[entry]['token']
-                except:
-                    print('URL or TOKEN not provided!')
-                    continue
-                data = {'Title': encoded_title, 'message': msg, 'priority': '5'}
-                try:
-                    req.post(f"{url}/message?token={token}", data)
-                except Exception as e:
-                    print('Failed!' + str(e))
+        elif entry == 'gotify':
+            print('Sending notification through Gotify...')
+            try:
+                url = config[entry]['url']
+                token = config[entry]['token']
+            except:
+                print('URL or TOKEN not provided!')
+                continue
+            data = {'Title': encoded_title, 'message': msg, 'priority': '5'}
+            try:
+                req.post(f"{url}/message?token={token}", data)
+            except Exception as e:
+                print('Failed!' + str(e))
 
-            case 'telegram':
-                print('Sending notification through Telegram...')
-                try:
-                    chat = config[entry]['chat']
-                    token = config[entry]['token']
-                except:
-                    print('CHAT or TOKEN not provided!')
-                    continue
-                cmd = f"./telegram.sh -t {token} -c {chat} -T {encoded_title} -M \"{msg}\""
-                try:
-                    with subprocess.Popen(cmd, shell=True, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout as output:
-                        for line in output:
-                            line_utf = line.decode('utf-8').strip('\n')
-                            if line_utf:
-                                print(line_utf)
-                except Exception as e:
-                    clean_exit(f"Failed!\n{e}", appstate)
+        elif entry == 'telegram':
+            print('Sending notification through Telegram...')
+            try:
+                chat = config[entry]['chat']
+                token = config[entry]['token']
+            except:
+                print('CHAT or TOKEN not provided!')
+                continue
+            cmd = f"./telegram.sh -t {token} -c {chat} -T {encoded_title} -M \"{msg}\""
+            try:
+                with subprocess.Popen(cmd, shell=True, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout as output:
+                    for line in output:
+                        line_utf = line.decode('utf-8').strip('\n')
+                        if line_utf:
+                            print(line_utf)
+            except Exception as e:
+                clean_exit(f"Failed!\n{e}", appstate)
 
-            case _:
-                print('Don\'t know how to send notifications to ' + entry)
+        else:
+            print('Don\'t know how to send notifications to ' + entry)
