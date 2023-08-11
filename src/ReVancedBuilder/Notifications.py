@@ -8,6 +8,7 @@ import re
 import requests as req
 import subprocess
 
+
 def send_notif(appstate, error=False):
     print = appstate['logger'].info
     timestamp = appstate['timestamp']
@@ -32,7 +33,8 @@ def send_notif(appstate, error=False):
         for app in build_config:
             if not build_config[app].getboolean('build'):
                 continue
-            msg = msg.replace(build_config[app]['apk'], build_config[app]['pretty_name'])
+            msg = msg.replace(
+                build_config[app]['apk'], build_config[app]['pretty_name'])
 
         msg += '\nTimestamp: ' + timestamp
         if appstate['microg_updated']:
@@ -53,7 +55,7 @@ def send_notif(appstate, error=False):
                 print('URL or TOPIC not provided!')
                 continue
             headers = {'Icon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png',
-                        'Title': encoded_title}
+                       'Title': encoded_title}
             try:
                 req.post(f"{url}/{topic}", msg, headers=headers)
             except Exception as e:
@@ -89,7 +91,7 @@ def send_notif(appstate, error=False):
                         if line_utf:
                             print(line_utf)
             except Exception as e:
-                clean_exit(f"Failed!\n{e}", appstate)
+                err_exit(f"Failed!\n{e}", appstate)
 
         else:
             print('Don\'t know how to send notifications to ' + entry)

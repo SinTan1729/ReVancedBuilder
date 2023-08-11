@@ -10,6 +10,8 @@ import time
 from ReVancedBuilder.Notifications import send_notif
 
 # Move apps to proper location
+
+
 def move_apps(appstate):
     build_config = appstate['build_config']
     print = appstate['logger'].info
@@ -30,7 +32,7 @@ def move_apps(appstate):
         except FileNotFoundError:
             pass
             # sys.exit('There was an error moving the final apk files!')
-        
+
         # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
         with os.scandir('archive') as dir:
             files = []
@@ -50,7 +52,8 @@ def move_apps(appstate):
                 if f.stat().st_ctime < now - 7 * 86400:
                     os.remove(f)
 
-def clean_exit(msg, appstate, code=1):
+
+def err_exit(msg, appstate, code=1):
     print = appstate['logger'].info
 
     try:
@@ -58,10 +61,10 @@ def clean_exit(msg, appstate, code=1):
         send_notif(appstate, error=True)
     except:
         pass
-    
+
     if msg:
-        print(msg)
-        
+        print(f"ERROR: {msg}")
+
     # Delete the lockfile
     os.remove('lockfile')
     sys.exit(code)

@@ -17,7 +17,7 @@ from datetime import datetime
 from ReVancedBuilder.APKPure_dl import apkpure_best_match, apkpure_dl, get_apks
 from ReVancedBuilder.JAVABuilder import build_apps
 from ReVancedBuilder.Notifications import send_notif
-from ReVancedBuilder.Cleanup import move_apps, clean_exit
+from ReVancedBuilder.Cleanup import move_apps, err_exit
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
@@ -52,7 +52,7 @@ def update_microg(appstate):
         data = req.get('https://api.github.com/repos/inotia00/VancedMicroG/releases/latest').json()['tag_name']
         latest_ver = Version(data)
     except req.exceptions.RequestException as e:
-        clean_exit(e, appstate)
+        err_exit(e, appstate)
 
     try:
         present_ver = Version(appstate['present_vers']['VancedMicroG'])
@@ -124,7 +124,7 @@ except:
     flag = None
 
 if flag not in ['buildonly', 'checkonly', 'force', 'experimental', None]:
-        clean_exit(f"Unknown flag: {flag}", appstate)
+        err_exit(f"Unknown flag: {flag}", appstate)
 
 appstate['flag'] = flag
 appstate['microg_updated'] = False
@@ -137,7 +137,7 @@ try:
     appstate['build_config']=cp.ConfigParser()
     appstate['build_config'].read_file(open('build_config', 'r'))
 except FileNotFoundError:
-    clean_exit('No build config provided, exiting. Please look at the GitHub page for more information:\n  https://github.com/SinTan1729/ReVancedBuilder', appstate)
+    err_exit('No build config provided, exiting. Please look at the GitHub page for more information:\n  https://github.com/SinTan1729/ReVancedBuilder', appstate)
 
 appstate['notification_config'] = cp.ConfigParser()
 appstate['notification_config'].read('notification_config')
@@ -146,7 +146,7 @@ appstate['notification_config'].read('notification_config')
 try:
     tools = req.get('https://releases.revanced.app/tools').json()['tools']
 except req.exceptions.RequestException as e:
-    clean_exit(e, appstate)
+    err_exit(e, appstate)
 
 try:
     with open('versions.json', 'r') as f:

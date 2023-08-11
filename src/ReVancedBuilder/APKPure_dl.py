@@ -11,14 +11,14 @@ from packaging.version import Version
 import requests as req
 from bs4 import BeautifulSoup as bs
 
-from ReVancedBuilder.Cleanup import clean_exit
+from ReVancedBuilder.Cleanup import err_exit
 
 # Determine the best version available to download
 def apkpure_best_match(version, soup):
     try:
         vers_list = [Version(x['data-dt-version']) for x in soup.css.select(f"a[data-dt-apkid^=\"b/APK/\"]")]
     except:
-        clean_exit(f"    There was some error getting list of versions of {apk}...", appstate)
+        err_exit(f"    There was some error getting list of versions of {apk}...", appstate)
     
     if version != '0':
         vers_list = filter(lambda x: x <= Version(version), vers_list)
@@ -50,7 +50,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag)
     try:
         ver_code = soup.css.select(f"a[data-dt-version=\"{version}\"][data-dt-apkid^=\"b/APK/\"]")[0]['data-dt-versioncode']
     except:
-        clean_exit(f"    There was some error while downloading {apk}...", appstate)
+        err_exit(f"    There was some error while downloading {apk}...", appstate)
     
     res = session.get(f"https://d.apkpure.com/b/APK/{apk}?versionCode={ver_code}", stream=True)
     res.raise_for_status()
@@ -73,7 +73,7 @@ def get_apks(appstate):
     try:
         patches = req.get('https://releases.revanced.app/patches').json()
     except req.exceptions.RequestException as e:
-        clean_exit(e, appstate)
+        err_exit(e, appstate)
     
     session = req.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/116.0'})
@@ -88,7 +88,7 @@ def get_apks(appstate):
             pretty_name = build_config[app]['pretty_name']
             apkpure_appname = build_config[app]['apkpure_appname']
         except:
-            clean_exit(f"Invalid config for {app} in build_config!", appstate)
+            err_exit(f"Invalid config for {app} in build_config!", appstate)
 
         print(f"Checking {pretty_name}...")
         try:

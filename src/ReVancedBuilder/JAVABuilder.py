@@ -9,9 +9,11 @@ import configparser as cp
 import json
 import subprocess
 
-from ReVancedBuilder.Cleanup import clean_exit
+from ReVancedBuilder.Cleanup import err_exit
 
 # Build the revanced apps
+
+
 def build_apps(appstate):
     build_config = appstate['build_config']
     flag = appstate['flag']
@@ -28,7 +30,7 @@ def build_apps(appstate):
         excluded_patches = json.loads(chosen_patches['patches']['excluded'])
     except Exception as e:
         excluded_patches = []
-    
+
     for app in build_config:
         # Check if we need to build an app
         if not build_config[app].getboolean('build'):
@@ -41,7 +43,7 @@ def build_apps(appstate):
             root = build_config[app].getboolean('root')
         except:
             root = False
-        
+
         if root:
             cmd += ' --mount -e microg-support'
 
@@ -49,10 +51,10 @@ def build_apps(appstate):
             cmd += f" -i {item}"
         for item in excluded_patches:
             cmd += f" -e {item}"
-        
+
         if flag == 'experimental':
             cmd += ' --experimental'
-        
+
         try:
             keystore = build_config[app]['keystore']
             if not root:
@@ -66,15 +68,15 @@ def build_apps(appstate):
             apkpure_appname = build_config[app]['apkpure_appname']
             output_name = build_config[app]['output_name']
         except:
-            clean_exit(f"Invalid config for {app} in build_config!", appstate)
-        
+            err_exit(f"Invalid config for {app} in build_config!", appstate)
+
         cmd += f" -a {apk}.apk -o {output_name}.apk"
 
         if root:
             print(f"Building {pretty_name} (root)...")
         else:
             print(f"Building {pretty_name} (nonroot)...")
-        
+
         try:
             with subprocess.Popen(cmd, shell=True, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout as output:
                 for line in output:
@@ -82,10 +84,11 @@ def build_apps(appstate):
                     if line_utf:
                         print(line_utf)
         except Exception as e:
-            clean_exit(f"There was an error while building {pretty_name}!\n{e}", appstate)
-        
+            err_exit(
+                f"There was an error while building {pretty_name}!\n{e}", appstate)
+
         try:
             os.rename(output_name+'.apk', output_name+'.apk')
         except FileNotFoundError:
-            clean_exit(f"There was an error while building {pretty_name}!", appstate)
-        
+            err_exit(
+                f"There was an error while building {pretty_name}!", appstate)
