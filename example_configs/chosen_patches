@@ -1,0 +1,4 @@
+[patches]
+# Both have to be comma separated lists of patches
+included = []
+excluded = []

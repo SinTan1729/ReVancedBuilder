@@ -1,0 +1,51 @@
+# List all the applications to be built in their separate sections.
+# The version part is optional. If provided, automatic version determination
+# will be turned off. In that case, you're responsible for ensuring that the
+# version is present in APKPure.com
+
+[youtube_nonroot]
+build = true
+pretty_name = YouTube
+apk = com.google.android.youtube
+apkpure_appname = youtube
+root = false
+# Timestamp and extension will be added automatically
+output_name = YouTube_ReVanced_nonroot
+keystore = revanced-yt-nonroot.keystore
+# version = version
+
+[youtube_root]
+build = false
+pretty_name = YouTube (root)
+apk = com.google.android.youtube
+apkpure_appname = youtube
+root = true
+# Timestamp and extension will be added automatically
+output_name = YouTube_ReVanced_root
+keystore = revanced-yt-root.keystore
+# version = "version"
+
+[youtube_music]
+build = true
+pretty_name = YouTube Music
+apk = com.google.android.apps.youtube.music
+apkpure_appname = youtube-music
+root = false
+# Timestamp and extension will be added automatically
+output_name = YouTube_Music_ReVanced_nonroot
+keystore = revanced-ytm-nonroot.keystore
+# version = version
+
+[youtube_music_root]
+build = false
+pretty_name = YouTube Music (root)
+apk = com.google.android.apps.youtube.music
+apkpure_appname = youtube-music
+root = true
+# Timestamp and extension will be added automatically
+output_name = YouTube_Music_ReVanced_root
+keystore = revanced-ytm-root.keystore
+# version = version
+
+[post_script]
+# file = post_script.sh

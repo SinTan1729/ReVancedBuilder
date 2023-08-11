@@ -1,0 +1,25 @@
+[telegram]
+# Settings for sending Telegram notification using telegram.sh
+# In case you decide to use it, please put valid config in the
+# TOKEN and CHAT fields
+# Check out README for instructions
+# enabled = true
+# chat = url
+# token = token
+
+[gotify]
+# Settings for sending Gotify notifications
+# In case you decide to use it, please put valid config in the
+# URL and TOKEN fields
+# Check out README for instructions
+# enabled = true
+# URL = url
+# token = token
+
+[ntfy]
+# Settings for sending ntfy.sh notifications
+# In case you decide to use it, please put valid config in the
+# URL and TOPIC fields
+enabled = false
+url = url
+topic = topic

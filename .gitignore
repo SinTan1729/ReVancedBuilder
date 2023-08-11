@@ -7,3 +7,7 @@ build/
 .editorconfig
 patches.txt
 .vscode/
+.directory
+.venv/
+__pycache__/
+ReVancedBuilder.egg-info/

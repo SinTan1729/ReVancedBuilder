@@ -1,12 +1,19 @@
 # Revanced Builder
-This repo will allow one to build [ReVanced](https://github.com/revanced/) apps automatically and post it to a telegram channel to access and possibly share the builds with friends. It uses [Gotify](https://gotify.net), [ntfy.sh](https://ntfy.sh) or [telegram.sh](https://github.com/fabianonline/telegram.sh) to send messages and [telegram-upload](https://github.com/Nekmo/telegram-upload) to upload files (optionally, disabled out by default). Make sure that `Java >=17` is installed and selected as default.
+This repo will allow one to build [ReVanced](https://github.com/revanced/) apps automatically and send notifications and possibly share the builds with friends. It uses [Gotify](https://gotify.net), [ntfy.sh](https://ntfy.sh) or [telegram.sh](https://github.com/fabianonline/telegram.sh) to send messages. Make sure that `Java >=17` is installed and selected as default.
 
+## Installation
+Recommended way is to use [`pipx`](https://github.com/pypa/pipx) to install the program.
+```
+pipx install git+https://github.com/SinTan1729/ReVancedBuilder
+```
 ## How to use
-Just run `./build_revanced <working-directory> (force/clean/experimental/checkonly/buildonly)`. Might be a good idea to set it up to run periodically. There are a few ways of doing it.
+Just run `ReVancedBuilder <working-directory> (force/experimental/checkonly/buildonly)`.
+
+It might be a good idea to set it up to run periodically. There are a few ways of doing it.
 1. Just drop it inside `/etc/cron.daily/`.
 1. To make it run at a specific time (6AM in the example) using `cron`, put this in your `crontab`:
     ```
-    0 6 * * * <full-script-location> <full-working-directory-location>
+    0 6 * * * <program-full-location> <full-working-directory-location>
     ```
 1. The exact same thing as in 2 can be achieved using `systemd` timers instead. Create the following files.
     ```
@@ -22,7 +29,7 @@ Just run `./build_revanced <working-directory> (force/clean/experimental/checkon
     User=<user>
     Group=<group>
     Environment="_JAVA_OPTIONS=-Xmx512m"
-    ExecStart=<full-script-location> <full-working-directory-location>
+    ExecStart=<program-full-location> <full-working-directory-location>
     ```
     ```
     /etc/systemd/system/revanced-builder.timer
@@ -42,19 +49,12 @@ Just run `./build_revanced <working-directory> (force/clean/experimental/checkon
     ```
 
 ## Notes
-- The following programs are needed to run this script. Make sure that you have them in your `$PATH`.
-    ```
-    htmlq jq wget java curl
-    ```
-- To enable build for a particular apk, copy the `build_settings` file to your working directory and modify it to suit your needs.
-- The script will download the **automatically selected compatible version** (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKPure, **NOT** latest official version on Google Play.
+- If you installed it using `pipx`, you can figure out the full location of the program by running `which ReVancedBuilder`.
+- This app needs some config files to run. Download all the config files inside `exampl_configs` directory, namely `build_config`, `chosen_patches` (optional), and `notification_config` (optional, needed only if you want to send notifications) and move them to your working directory. Then, you should modify these files to your liking.
+- The script will download the **automatically selected compatible version** (unless version is specified in `build_config`) (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKPure, **NOT** latest official version on Google Play.
 - Under **NO CIRCUMSTANCES** any APKs will be uploaded to this repository to avoid DMCA.
-- If you enable the Gotify, ntfy or telegram notifications or uploads, make sure to fill up the config options inside the `build_settings` file. For more information about the config, take at look at the repos of `telegram.sh` and `telegram-upload` provided above.
-- It can also run a post script (if exists) called `post_script.sh`. The `timestamp` is passed as `$1`.
-- In the current configuration, the script only builds YouTube ReVanced and YouTube Music ReVanced (both nonroot), but it's easy to add support for any other ReVanced app. The code for root builds is included but disabled by default.
+- If you enable telegram notifications, make sure to fill up the config options inside the `build_config` file. For more information about the config, take at look at the repos of `telegram.sh` and `telegram-upload` provided above.
+- It can also run a post script (if exists), specified in the `build_config` file. The `timestamp` is passed as `$1`.
+- In the current configuration, the script only builds YouTube ReVanced and YouTube Music ReVanced (both nonroot), but it's easy to add support for any other ReVanced app using the `build_config` file. The config files are self-explanatory.
 - All the packages are pulled from [APKPure](https://apkpure.com) and GitHub (the `revanced/*` repos).
 
-## Customize your build
-If you wish to continue with the default settings, you may skip this step.
-
-By default this will build ReVanced with ALL available patches. Follow [this guide](PATCHES_GUIDE.md) to exclude/customizing patches for your build.
