@@ -1,7 +1,18 @@
 # List all the applications to be built in their separate sections.
-# The version part is optional. If provided, automatic version determination
-# will be turned off. In that case, you're responsible for ensuring that the
-# version is present in APKPure.com
+# Only the post_script section is special. Look at README to understand what it does.
+# All apks are pulled from APKPure.com
+
+### Template (also look at the examples below)
+# [entry_name]
+# build = true/false, whether to build or not
+# apk = name of the apk file
+# apkpure_appname = name of the app in apkpure
+# output_name = what you want the app to be named after patching, timestamp and .apk extension will be added automatically
+# keystore = keystore to use for signing (optional)
+# version = provide version name here (optional), if provided, automatic version determination will be turned off
+###
+
+# Note: Your app should be available at https://apkpure.com/apkpure_appname/apk
 
 [youtube_nonroot]
 build = true
@@ -9,10 +20,8 @@ pretty_name = YouTube
 apk = com.google.android.youtube
 apkpure_appname = youtube
 root = false
-# Timestamp and extension will be added automatically
 output_name = YouTube_ReVanced_nonroot
 keystore = revanced-yt-nonroot.keystore
-# version = version
 
 [youtube_root]
 build = false
@@ -20,10 +29,8 @@ pretty_name = YouTube (root)
 apk = com.google.android.youtube
 apkpure_appname = youtube
 root = true
-# Timestamp and extension will be added automatically
 output_name = YouTube_ReVanced_root
 keystore = revanced-yt-root.keystore
-# version = "version"
 
 [youtube_music]
 build = true
@@ -31,10 +38,8 @@ pretty_name = YouTube Music
 apk = com.google.android.apps.youtube.music
 apkpure_appname = youtube-music
 root = false
-# Timestamp and extension will be added automatically
 output_name = YouTube_Music_ReVanced_nonroot
 keystore = revanced-ytm-nonroot.keystore
-# version = version
 
 [youtube_music_root]
 build = false
@@ -42,10 +47,8 @@ pretty_name = YouTube Music (root)
 apk = com.google.android.apps.youtube.music
 apkpure_appname = youtube-music
 root = true
-# Timestamp and extension will be added automatically
 output_name = YouTube_Music_ReVanced_root
 keystore = revanced-ytm-root.keystore
-# version = version
 
 [post_script]
 # file = post_script.sh
