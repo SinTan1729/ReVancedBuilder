@@ -22,6 +22,7 @@ from ReVancedBuilder.Cleanup import move_apps, err_exit
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
     for item in ['revanced-cli', 'revanced-integrations', 'revanced-patches']:
+        print(f"Checking updates for {item}...")
         *_, tool = filter(lambda x: x['repository'] == 'revanced/'+item, tools) # Get the last result
         latest_ver = Version(tool['version'])
 
@@ -48,6 +49,7 @@ def update_tools(appstate):
 
 # Update microG, if needed
 def update_microg(appstate):
+    print('Checking updates for Vanced microG...')
     try:
         data = req.get('https://api.github.com/repos/inotia00/VancedMicroG/releases/latest').json()['tag_name']
         latest_ver = Version(data)
