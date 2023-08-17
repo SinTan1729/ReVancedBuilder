@@ -1,5 +1,5 @@
 # Revanced Builder
-This repo will allow one to build [ReVanced](https://github.com/revanced/) apps automatically and send notifications and possibly share the builds with friends. It uses [Gotify](https://gotify.net), [ntfy.sh](https://ntfy.sh) or [telegram.sh](https://github.com/fabianonline/telegram.sh) to send messages. Make sure that `Java >=17` is installed and selected as default.
+This repo will allow one to build [ReVanced](https://github.com/revanced/) apps automatically, send notifications (and possibly share the builds with friends). It uses [Gotify](https://gotify.net), [ntfy.sh](https://ntfy.sh) or [telegram.sh](https://github.com/fabianonline/telegram.sh) to send messages. Make sure that `Java >=17` is installed and selected as default.
 
 ## Installation
 Recommended way is to use [`pipx`](https://github.com/pypa/pipx) to install the program.
@@ -28,7 +28,7 @@ It might be a good idea to set it up to run periodically. There are a few ways o
     Type=oneshot
     User=<user>
     Group=<group>
-    Environment="_JAVA_OPTIONS=-Xmx512m"
+    # Environment="_JAVA_OPTIONS=-Xmx512m" # optional, useful if experiencing crashes due to low memory
     ExecStart=<program-full-location> <full-working-directory-location>
     ```
     ```
@@ -52,7 +52,7 @@ It might be a good idea to set it up to run periodically. There are a few ways o
 - If you installed it using `pipx`, you can figure out the full location of the program by running `which ReVancedBuilder`.
 - This app needs some config files to run. Download all the config files inside `exampl_configs` directory, namely `build_config`, `chosen_patches` (optional), and `notification_config` (optional, needed only if you want to send notifications) and move them to your working directory. Then, you should modify these files to your liking.
 - The script will download the **automatically selected compatible version** (unless version is specified in `build_config`) (using compatibility of patches as listed [here](https://github.com/revanced/revanced-patches#list-of-available-patches)) of Youtube on APKPure, **NOT** latest official version on Google Play.
-- Under **NO CIRCUMSTANCES** any APKs will be uploaded to this repository to avoid DMCA.
+- **Under no circumstances** will any APKs be uploaded to this repository as that might attract legal problems.
 - If you enable telegram notifications, make sure to fill up the config options inside the `build_config` file. For more information about the config, take at look at the repos of `telegram.sh` and `telegram-upload` provided above.
 - It can also run a post script (if exists), specified in the `build_config` file. The `timestamp` is passed as `$1`.
 - In the current configuration, the script only builds YouTube ReVanced and YouTube Music ReVanced (both nonroot), but it's easy to add support for any other ReVanced app using the `build_config` file. The config files are self-explanatory.
