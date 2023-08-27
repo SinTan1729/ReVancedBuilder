@@ -37,7 +37,7 @@ def build_apps(appstate):
             continue
 
         # Build the command to be run
-        cmd = 'java -jar revanced-cli.jar -m revanced-integrations.apk -b revanced-patches.jar'
+        cmd = 'java -jar revanced-cli.jar patch -b revanced-patches.jar -m revanced-integrations.apk'
 
         try:
             root = build_config[app].getboolean('root')
