@@ -70,7 +70,7 @@ def build_apps(appstate):
         except:
             err_exit(f"Invalid config for {app} in build_config!", appstate)
 
-        cmd += f" -a {apk}.apk -o {output_name}.apk"
+        cmd += f" -o {output_name}.apk {apk}.apk"
 
         if root:
             print(f"Building {pretty_name} (root)...")
