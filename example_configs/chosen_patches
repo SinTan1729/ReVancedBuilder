@@ -1,4 +1,5 @@
 [patches]
 # Both have to be comma separated lists of patches
+# Make sure to use double quotes around patch names
 included = []
 excluded = []
