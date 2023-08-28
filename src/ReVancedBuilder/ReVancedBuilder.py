@@ -54,7 +54,7 @@ def update_microg(appstate):
         data = req.get('https://api.github.com/repos/inotia00/VancedMicroG/releases/latest').json()['tag_name']
         latest_ver = Version(data)
     except req.exceptions.RequestException as e:
-        err_exit(e, appstate)
+        err_exit(f"Error fetching info about Vanced microG, {e}", appstate)
 
     try:
         present_ver = Version(appstate['present_vers']['VancedMicroG'])
@@ -148,7 +148,7 @@ appstate['notification_config'].read('notification_config')
 try:
     tools = req.get('https://releases.revanced.app/tools').json()['tools']
 except req.exceptions.RequestException as e:
-    err_exit(e, appstate)
+    err_exit(f"Error fetching patch list, {e}", appstate)
 
 try:
     with open('versions.json', 'r') as f:

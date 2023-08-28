@@ -73,7 +73,7 @@ def get_apks(appstate):
     try:
         patches = req.get('https://releases.revanced.app/patches').json()
     except req.exceptions.RequestException as e:
-        err_exit(e, appstate)
+        err_exit(f"Error fetching patches, {e}", appstate)
     
     session = req.Session()
     session.headers.update({'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/116.0'})
