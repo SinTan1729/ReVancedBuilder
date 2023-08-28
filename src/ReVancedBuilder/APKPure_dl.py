@@ -71,7 +71,8 @@ def get_apks(appstate):
 
     # Get latest patches using the ReVanced API
     try:
-        patches = req.get('https://releases.revanced.app/patches').json()
+        patches_json = next(filter(lambda x: x['repository'] == 'revanced/revanced-patches', appstate['tools'])) # Get the first result
+        patches = req.get(patches_json['browser_download_url']).json()
     except req.exceptions.RequestException as e:
         err_exit(f"Error fetching patches, {e}", appstate)
     

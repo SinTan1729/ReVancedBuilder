@@ -23,6 +23,7 @@ from ReVancedBuilder.Cleanup import move_apps, err_exit
 def update_tools(appstate):
     for item in ['revanced-cli', 'revanced-integrations', 'revanced-patches']:
         print(f"Checking updates for {item}...")
+        tools = appstate['tools']
         *_, tool = filter(lambda x: x['repository'] == 'revanced/'+item, tools) # Get the last result
         latest_ver = Version(tool['version'])
 
@@ -146,7 +147,8 @@ appstate['notification_config'].read('notification_config')
 
 # Pull the latest information using the ReVanced API
 try:
-    tools = req.get('https://releases.revanced.app/tools').json()['tools']
+    tools = req.get('https://api.revanced.app/tools').json()['tools']
+    appstate['tools'] = tools
 except req.exceptions.RequestException as e:
     err_exit(f"Error fetching patch list, {e}", appstate)
 
