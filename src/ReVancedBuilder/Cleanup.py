@@ -58,7 +58,8 @@ def err_exit(msg, appstate, code=1):
 
     try:
         appstate['notification_config']
-        send_notif(appstate, error=True)
+        if appstate['flag'] != 'checkonly':
+            send_notif(appstate, error=True)
     except:
         pass
 

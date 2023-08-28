@@ -174,7 +174,7 @@ if (flag != 'checkonly' and not appstate['up-to-date']) or flag in ['force', 'bu
 # Update version numbers in the versions.json file
 if appstate['up-to-date'] and flag != 'buildonly':
     print('There\'s nothing to do.')
-elif flag != ['checkonly']:
+elif flag != 'checkonly':
     send_notif(appstate)
     try:
         os.rename('versions.json', 'versions-old.json')
