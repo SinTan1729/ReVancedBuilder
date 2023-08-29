@@ -50,6 +50,13 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag)
         if version not in [apkpure_version, '0']:
             print(f"Required version {version} not found in APKPure, choosing version {apkpure_version} instead.")
         version=apkpure_version
+        try:
+            if present_vers[apk] == version and flag != 'force' and os.path.isfile(apk+'.apk'):
+                print(
+                    f"Recommended version {version} of {apk} is already present.")
+                return
+        except KeyError:
+            pass
 
     if flag == 'checkonly' and present_vers[apk] != version:
         print(f"{apk} has an update ({present_vers[apk]} -> {version})")
