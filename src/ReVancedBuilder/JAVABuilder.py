@@ -73,9 +73,9 @@ def build_apps(appstate):
         cmd += f" -o {output_name}.apk {apk}.apk"
 
         if root:
-            print(f"Building {pretty_name} (root)...")
+            print(f"Building {pretty_name} (root) using '{cmd}'")
         else:
-            print(f"Building {pretty_name} (nonroot)...")
+            print(f"Building {pretty_name} (nonroot) using '{cmd}'")
 
         try:
             with subprocess.Popen(cmd, shell=True, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).stdout as output:
