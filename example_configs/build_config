@@ -32,7 +32,7 @@ root = true
 output_name = YouTube_ReVanced_root
 keystore = revanced-yt-root.keystore
 
-[youtube_music]
+[youtube_music_nonroot]
 build = true
 pretty_name = YouTube Music
 apk = com.google.android.apps.youtube.music
