@@ -6,6 +6,7 @@ Recommended way is to use [`pipx`](https://github.com/pypa/pipx) to install the 
 ```
 pipx install git+https://github.com/SinTan1729/ReVancedBuilder
 ```
+And then you can update/reinstall the program using `pipx reinstall ReVancedBuilder`.
 ## How to use
 Just run `ReVancedBuilder <working-directory> (force/experimental/checkonly/buildonly)`.
 
