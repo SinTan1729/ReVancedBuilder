@@ -185,8 +185,9 @@ elif flag != 'checkonly':
         with open('versions.json', 'w') as f:
             json.dump(appstate['present_vers'], f, indent=4)
         try:
-            subprocess.run(
-                f"{appstate['build_config']['post_script']['file']} {appstate['timestamp']}", shell=True)
+            cmd = f"{appstate['build_config']['post_script']['file']} {appstate['timestamp']}"
+            print(f"Running the psot command '{cmd}")
+            subprocess.run(cmd, shell=True)
         except:
             pass
 
