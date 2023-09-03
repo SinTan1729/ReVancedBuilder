@@ -51,4 +51,4 @@ output_name = YouTube_Music_ReVanced_root
 keystore = revanced-ytm-root.keystore
 
 [post_script]
-# file = post_script.sh
+# file = ./post_script.sh

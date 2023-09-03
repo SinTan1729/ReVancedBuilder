@@ -186,7 +186,7 @@ elif flag != 'checkonly':
             json.dump(appstate['present_vers'], f, indent=4)
         try:
             cmd = f"{appstate['build_config']['post_script']['file']} {appstate['timestamp']}"
-            print(f"Running the psot command '{cmd}")
+            print(f"Running the post command '{cmd}'")
             subprocess.run(cmd, shell=True)
         except:
             pass
