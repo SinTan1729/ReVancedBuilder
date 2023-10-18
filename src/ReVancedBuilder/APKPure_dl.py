@@ -125,12 +125,13 @@ def get_apks(appstate):
             hard_version = False
             compatible_vers = []
             for patch in patches:
-                for pkg in patch['compatiblePackages']:
-                    if pkg['name'] == apk:
-                        try:
-                            compatible_vers.append(pkg['versions'][-1])
-                        except TypeError:
-                            pass
+                if patch['compatiblePackages'] is not None:
+                    for pkg in patch['compatiblePackages']:
+                        if pkg['name'] == apk:
+                            try:
+                                compatible_vers.append(pkg['versions'][-1])
+                            except TypeError:
+                                pass
 
             if not compatible_vers:
                 required_ver = Version('0')
