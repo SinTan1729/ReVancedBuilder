@@ -58,7 +58,7 @@ def build_apps(appstate):
         try:
             keystore = build_config[app]['keystore']
             if not root:
-                cmd += f" --keystore {keystore}"
+                cmd += f" --keystore {keystore} --alias=alias --keystore-entry-password=ReVanced --keystore-password=ReVanced"
         except:
             pass
 
