@@ -51,7 +51,7 @@ It might be a good idea to set it up to run periodically. There are a few ways o
 
 ## Notes
 - If you installed it using `pipx`, you can figure out the full location of the program by running `which ReVancedBuilder`.
-- This app needs some config files to run. Download all the config files inside `exampl_configs` directory, namely `build_config`, `chosen_patches` (optional), and `notification_config` (optional, needed only if you want to send notifications) and move them to your working directory. Then, you should modify these files to your liking.
+- This app needs some config files to run. Download all the config files inside `example_configs` directory, namely `build_config`, `chosen_patches` (optional), and `notification_config` (optional, needed only if you want to send notifications) and move them to your working directory. Then, you should modify these files to your liking.
 - The script will download the **automatically selected compatible version** (unless version is specified in `build_config`) (using compatibility of patches as listed [here](https://revanced.app/patches)) of Youtube on APKPure, **NOT** latest official version on Google Play.
 - **Under no circumstances** will any APKs be uploaded to this repository as that might attract legal problems.
 - If you enable telegram notifications, make sure to fill up the config options inside the `build_config` file. For more information about the config, take at look at the repos of `telegram.sh` and `telegram-upload` provided above.
