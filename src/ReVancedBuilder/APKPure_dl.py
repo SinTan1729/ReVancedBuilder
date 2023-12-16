@@ -137,6 +137,7 @@ def get_apks(appstate):
                 required_ver = Version('0')
             else:
                 required_ver = min(map(lambda x: Version(x), compatible_vers))
+            print(f"Chosen required version of {app} is {required_ver}.")
 
         apkpure_dl(apk, apkpure_appname, str(required_ver),
                    hard_version, session, present_vers, flag)
