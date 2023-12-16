@@ -101,7 +101,7 @@ def get_apks(appstate):
 
     session = req.Session()
     session.headers.update(
-        {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/116.0'})
+        {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'})
 
     for app in build_config:
         # Check if we need to build an app
