@@ -29,11 +29,11 @@ def apkpure_best_match(version, soup):
 
     return str(max(vers_list))
 
-# Download an apk from APKPure.com
+# Download an apk from apkpure.net
 
 
 def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag):
-    res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
+    res = session.get(f"https://apkpure.net/{appname}/{apk}/versions")
     res.raise_for_status()
     soup = bs(res.text, 'html.parser')
 
@@ -74,7 +74,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag)
             f"    There was some error while downloading {apk}...", appstate)
 
     res = session.get(
-        f"https://d.apkpure.com/b/APK/{apk}?versionCode={ver_code}", stream=True)
+        f"https://d.apkpure.net/b/APK/{apk}?versionCode={ver_code}", stream=True)
     res.raise_for_status()
     with open(apk+'.apk', 'wb') as f:
         for chunk in res.iter_content(chunk_size=8192):
