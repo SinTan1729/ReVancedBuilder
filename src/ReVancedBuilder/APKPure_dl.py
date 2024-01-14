@@ -71,7 +71,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag)
             f"a[data-dt-version=\"{version}\"][data-dt-apkid^=\"b/APK/\"]")[0]['data-dt-versioncode']
     except:
         err_exit(
-            f"    There was some error while downloading {apk}...", appstate)
+            f"    There was some error while downloading {apk}...", appname)
 
     res = session.get(
         f"https://d.apkpure.net/b/APK/{apk}?versionCode={ver_code}", stream=True)
