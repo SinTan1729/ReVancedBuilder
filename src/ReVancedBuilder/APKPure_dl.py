@@ -139,8 +139,11 @@ def get_apks(appstate):
                 required_ver = min(map(lambda x: Version(x), compatible_vers))
             print(f"Chosen required version of {app} is {required_ver}.")
 
-        apkpure_dl(apk, apkpure_appname, str(required_ver),
-                   hard_version, session, present_vers, flag)
+        if appstate['present_vers'][apk] == str(required_ver):
+            print("It's already present on disk, so skipping download.")
+        else:
+            apkpure_dl(apk, apkpure_appname, str(required_ver),
+                hard_version, session, present_vers, flag)
 
         present_vers.update({apk: str(required_ver)})
 
