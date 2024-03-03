@@ -120,7 +120,7 @@ def get_apks(appstate):
             required_ver = build_config[app]['version']
             required_ver = Version(required_ver)
             hard_version = True
-            print(f"Using version {required_ver} of {app} from build_config.")
+            print(f"Using version {required_ver} of {apk} from build_config.")
         except:
             hard_version = False
             compatible_vers = []
@@ -137,7 +137,7 @@ def get_apks(appstate):
                 required_ver = Version('0')
             else:
                 required_ver = min(map(lambda x: Version(x), compatible_vers))
-            print(f"Chosen required version of {app} is {required_ver}.")
+            print(f"Chosen required version of {apk} is {required_ver}.")
 
         if appstate['present_vers'][apk] == str(required_ver):
             print("It's already present on disk, so skipping download.")
