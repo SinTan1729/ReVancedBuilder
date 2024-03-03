@@ -164,7 +164,7 @@ appstate['up-to-date'] = True
 if flag != 'buildonly':
     appstate = update_tools(appstate)
     appstate = update_microg(appstate)
-    if not appstate['up-to-date'] or flag == 'force':
+    if (not appstate['up-to-date'] and flag != 'checkonly') or flag == 'force':
         appstate = get_apks(appstate)
 
 if (flag != 'checkonly' and not appstate['up-to-date']) or flag in ['force', 'buildonly']:
