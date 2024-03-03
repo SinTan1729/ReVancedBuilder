@@ -24,7 +24,7 @@ def update_tools(appstate):
     for item in ['revanced-cli', 'revanced-integrations', 'revanced-patches']:
         print(f"Checking updates for {item}...")
         tools = appstate['tools']
-        *_, tool = filter(lambda x: x['repository'] == 'revanced/'+item, tools) # Get the last result
+        tool = filter(lambda x: x['repository'] == 'revanced/'+item and x['content_type'] not in ['application/pgp-keys', 'application/json'], tools)
         latest_ver = Version(tool['version'])
 
         try:
