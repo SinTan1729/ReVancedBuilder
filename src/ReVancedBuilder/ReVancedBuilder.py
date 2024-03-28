@@ -50,29 +50,29 @@ def update_tools(appstate):
 
 # Update microG, if needed
 def update_microg(appstate):
-    print('Checking updates for Vanced microG...')
+    print('Checking updates for GmsCore...')
     try:
-        data = req.get('https://api.github.com/repos/inotia00/VancedMicroG/releases/latest').json()['tag_name']
+        data = req.get('https://api.github.com/repos/ReVanced/GmsCore/releases/latest').json()['tag_name']
         latest_ver = Version(data)
     except req.exceptions.RequestException as e:
-        err_exit(f"Error fetching info about Vanced microG, {e}", appstate)
+        err_exit(f"Error fetching info about GmsCore, {e}", appstate)
 
     try:
-        present_ver = Version(appstate['present_vers']['VancedMicroG'])
+        present_ver = Version(appstate['present_vers']['GmsCore'])
     except KeyError:
         present_ver = Version('0')
 
     if flag == 'force' or not os.path.isfile('microg.apk') or present_ver < latest_ver:
             appstate['up-to-date'] = False
-            print(f"Vanced microG has an update ({str(present_ver)} -> {str(latest_ver)})")
+            print(f"GmsCore has an update ({str(present_ver)} -> {str(latest_ver)})")
             if flag != 'checkonly':
-                print(f"Downloading vanced-microg.apk...")
-                res = req.get('https://github.com/inotia00/VancedMicroG/releases/latest/download/microg.apk', stream=True)
+                print(f"Downloading GmsCore...")
+                res = req.get('https://github.com/ReVanced/GmsCore/releases/latest/download/microg.apk', stream=True)
                 res.raise_for_status()
                 with open('microg.apk', 'wb') as f:
                     for chunk in res.iter_content(chunk_size=8192):
                         f.write(chunk)
-                appstate['present_vers'].update({'VancedMicroG': str(latest_ver)})
+                appstate['present_vers'].update({'GmsCore': str(latest_ver)})
                 print("Done!")
                 appstate['microg_updated'] = True
 
