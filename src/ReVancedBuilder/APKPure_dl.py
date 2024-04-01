@@ -8,7 +8,7 @@ import sys
 import json
 
 from packaging.version import Version
-import requests as req
+import cloudscraper as scraper
 from bs4 import BeautifulSoup as bs
 
 from ReVancedBuilder.Cleanup import err_exit
@@ -99,9 +99,7 @@ def get_apks(appstate):
     except req.exceptions.RequestException as e:
         err_exit(f"Error fetching patches, {e}", appstate)
 
-    session = req.Session()
-    session.headers.update(
-        {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'})
+    session = scraper.create_scraper()
 
     for app in build_config:
         # Check if we need to build an app
