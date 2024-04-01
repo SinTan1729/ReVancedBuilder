@@ -16,22 +16,24 @@ from ReVancedBuilder.Cleanup import err_exit
 
 def apkpure_best_match(version, soup):
     try:
-        vers_list = [Version(x['data-dt-version'])
-                     for x in soup.css.select(f"a[data-dt-apkid^=\"b/APK/\"]")]
+        vers_list_str = [x['data-dt-version'] for x in soup.css.select(f"a[data-dt-apkid^=\"b/APK/\"]")]
     except:
         err_exit(
             f"    There was some error getting list of versions of {apk}...", appstate)
 
+    vers_list = map(lambda x: Version(x), vers_list_str)
+
     if version != '0':
         vers_list = filter(lambda x: x <= Version(version), vers_list)
 
-    return str(max(vers_list))
+    max_ver = max(vers_list)
+    return next(filter(lambda x: Version(x) ==  max_ver, vers_list_str))
 
 # Download an apk from apkpure.net
 
 
 def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag):
-    res = session.get(f"https://apkpure.net/{appname}/{apk}/versions")
+    res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
     res.raise_for_status()
     soup = bs(res.text, 'html.parser')
 
@@ -72,7 +74,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag)
             f"    There was some error while downloading {apk}...", appname)
 
     res = session.get(
-        f"https://d.apkpure.net/b/APK/{apk}?versionCode={ver_code}", stream=True)
+        f"https://d.apkpure.com/b/APK/{apk}?versionCode={ver_code}", stream=True)
     res.raise_for_status()
     with open(apk+'.apk', 'wb') as f:
         for chunk in res.iter_content(chunk_size=8192):
@@ -115,7 +117,6 @@ def get_apks(appstate):
         print(f"Checking {pretty_name}...")
         try:
             required_ver = build_config[app]['version']
-            required_ver = Version(required_ver)
             hard_version = True
             print(f"Using version {required_ver} of {apk} from build_config.")
         except:
@@ -134,15 +135,17 @@ def get_apks(appstate):
                 required_ver = Version('0')
             else:
                 required_ver = min(map(lambda x: Version(x), compatible_vers))
+                required_ver = next(filter(lambda x: Version(x) ==  required_ver, compatible_vers))
+
             print(f"Chosen required version of {apk} is {required_ver}.")
 
-        if appstate['present_vers'][apk] == str(required_ver):
+        if appstate['present_vers'][apk] == required_ver:
             print("It's already present on disk, so skipping download.")
         else:
-            apkpure_dl(apk, apkpure_appname, str(required_ver),
+            apkpure_dl(apk, apkpure_appname, required_ver,
                 hard_version, session, present_vers, flag)
 
-        present_vers.update({apk: str(required_ver)})
+        present_vers.update({apk: required_ver})
 
     appstate['present_vers'] = present_vers
     return appstate
