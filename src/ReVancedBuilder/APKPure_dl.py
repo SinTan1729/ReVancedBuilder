@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import os
-import sys
-import json
 
 from packaging.version import Version
 import cloudscraper as scraper
@@ -90,16 +88,17 @@ def get_apks(appstate):
 
     print('Downloading required apk files from APKPure...')
 
+    # Create a cloudscraper session
+    session = scraper.create_scraper()
+
     # Get latest patches using the ReVanced API
     try:
         # Get the first result
         patches_json = next(filter(
             lambda x: x['repository'] == 'revanced/revanced-patches', appstate['tools']))
-        patches = req.get(patches_json['browser_download_url']).json()
-    except req.exceptions.RequestException as e:
+        patches = session.get(patches_json['browser_download_url']).json()
+    except session.exceptions.RequestException as e:
         err_exit(f"Error fetching patches, {e}", appstate)
-
-    session = scraper.create_scraper()
 
     for app in build_config:
         # Check if we need to build an app

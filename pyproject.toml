@@ -11,7 +11,7 @@ requires-python = ">=3.6"
 keywords = ["revanced", "patch"]
 license = { file = "LICENSE" }
 classifiers = ["Programming Language :: Python :: 3"]
-dependencies = ["cloudscraper", "packaging", "bs4"]
+dependencies = ["cloudscraper", "requests", "packaging", "bs4"]
 version = "1.2"
 
 [project.scripts]
