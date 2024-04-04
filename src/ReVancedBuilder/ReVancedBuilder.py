@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# SPDX-FileCopyrightText: 2023 Sayantan Santra <sayantan.santra@ou.edu>
+# SPDX-FileCopyrightText: 2023 Sayantan Santra <sayantan.santra689@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-only
 
 import sys
