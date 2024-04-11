@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import os
-import sys
 import configparser as cp
 import json
 import subprocess
@@ -45,7 +44,7 @@ def build_apps(appstate):
             root = False
 
         if root:
-            cmd += ' --mount -e microg-support'
+            cmd += ' --mount -e "GmsCore support"'
 
         for item in included_patches:
             cmd += f" -i {item}"
@@ -58,14 +57,13 @@ def build_apps(appstate):
         try:
             keystore = build_config[app]['keystore']
             if not root:
-                cmd += f" --keystore {keystore} --alias=alias --keystore-entry-password=ReVanced --keystore-password=ReVanced"
+                cmd += f" --keystore {keystore} --keystore-entry-alias=alias --keystore-entry-password=ReVanced --keystore-password=ReVanced"
         except:
             pass
 
         try:
             apk = build_config[app]['apk']
             pretty_name = build_config[app]['pretty_name']
-            apkpure_appname = build_config[app]['apkpure_appname']
             output_name = build_config[app]['output_name']
         except:
             err_exit(f"Invalid config for {app} in build_config!", appstate)

@@ -28,7 +28,6 @@ def send_notif(appstate, error=False):
         msg = msg.replace('cli', 'CLI')
         msg = msg.replace('integrations', 'Integrations')
         msg = msg.replace('patches', 'Patches')
-        msg = msg.replace('VancedMicroG', 'Vanced microG')
 
         for app in build_config:
             if not build_config[app].getboolean('build'):
@@ -37,8 +36,8 @@ def send_notif(appstate, error=False):
                 build_config[app]['apk'], build_config[app]['pretty_name'])
 
         msg += '\nTimestamp: ' + timestamp
-        if appstate['microg_updated']:
-            msg += '\nVanced microG was updated.'
+        if appstate['gmscore_updated']:
+            msg += '\nGmsCore was updated.'
 
     config = appstate['notification_config']
     for entry in config:

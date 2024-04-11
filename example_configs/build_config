@@ -50,5 +50,9 @@ root = true
 output_name = YouTube_Music_ReVanced_root
 keystore = revanced-ytm-root.keystore
 
+[gmscore]
+# If you use a Xiaomi or Huawei device, change the variant to alt
+variant=regular
+
 [post_script]
 # file = ./post_script.sh

@@ -14,7 +14,7 @@ import requests as req
 from packaging.version import Version
 from datetime import datetime
 
-from ReVancedBuilder.APKPure_dl import apkpure_best_match, apkpure_dl, get_apks
+from ReVancedBuilder.APKPure_dl import get_apks
 from ReVancedBuilder.JAVABuilder import build_apps
 from ReVancedBuilder.Notifications import send_notif
 from ReVancedBuilder.Cleanup import move_apps, err_exit
@@ -48,33 +48,45 @@ def update_tools(appstate):
 
     return appstate
 
-# Update microG, if needed
-def update_microg(appstate):
+# Update GmsCore, if needed
+def update_gmscore(appstate):
     print('Checking updates for GmsCore...')
+    # Pull the latest information using the ReVanced API
     try:
-        data = req.get('https://api.github.com/repos/ReVanced/GmsCore/releases/latest').json()['tag_name']
-        latest_ver = Version(data)
+        data = req.get('https://api.revanced.app/v2/gmscore/releases/latest').json()['release']
     except req.exceptions.RequestException as e:
-        err_exit(f"Error fetching info about GmsCore, {e}", appstate)
+        err_exit(f"Error fetching GmsCore information, {e}", appstate)
+    
+    latest_ver = Version(data['metadata']['tag_name'])
 
     try:
         present_ver = Version(appstate['present_vers']['GmsCore'])
     except KeyError:
         present_ver = Version('0')
 
-    if flag == 'force' or not os.path.isfile('microg.apk') or present_ver < latest_ver:
+    try:
+        variant = appstate['build_config']['gmscore']['variant']
+    except KeyError:
+        variant = "regular"
+    
+    if variant == "alt":
+        gmscore_link = next(filter(lambda x: "-hw-" in x['name'], data['assets']))['browser_download_url']
+    else:
+        gmscore_link = next(filter(lambda x: "-hw-" not in x['name'], data['assets']))['browser_download_url']
+
+    if flag == 'force' or not os.path.isfile('GmsCore.apk') or present_ver < latest_ver:
             appstate['up-to-date'] = False
             print(f"GmsCore has an update ({str(present_ver)} -> {str(latest_ver)})")
             if flag != 'checkonly':
                 print(f"Downloading GmsCore...")
-                res = req.get('https://github.com/ReVanced/GmsCore/releases/latest/download/microg.apk', stream=True)
+                res = req.get(gmscore_link, stream=True)
                 res.raise_for_status()
-                with open('microg.apk', 'wb') as f:
+                with open('GmsCore.apk', 'wb') as f:
                     for chunk in res.iter_content(chunk_size=8192):
                         f.write(chunk)
                 appstate['present_vers'].update({'GmsCore': str(latest_ver)})
                 print("Done!")
-                appstate['microg_updated'] = True
+                appstate['gmscore_updated'] = True
 
     return appstate
 
@@ -130,7 +142,7 @@ if flag not in ['buildonly', 'checkonly', 'force', 'experimental', None]:
         err_exit(f"Unknown flag: {flag}", appstate)
 
 appstate['flag'] = flag
-appstate['microg_updated'] = False
+appstate['gmscore_updated'] = False
 
 print(f"Started building ReVanced apps at {time.strftime('%d %B, %Y %H:%M:%S')}")
 print('----------------------------------------------------------------------')
@@ -163,7 +175,7 @@ appstate['up-to-date'] = True
 # send_notif(appstate, error=False) # <,,,,,,,,<,,,,,,,,,,,,,
 if flag != 'buildonly':
     appstate = update_tools(appstate)
-    appstate = update_microg(appstate)
+    appstate = update_gmscore(appstate)
     if (not appstate['up-to-date'] and flag != 'checkonly') or flag == 'force':
         appstate = get_apks(appstate)
 
