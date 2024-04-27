@@ -139,7 +139,7 @@ def get_apks(appstate):
 
             print(f"Chosen required version of {apk} is {required_ver}.")
 
-        if appstate['present_vers'][apk] == required_ver:
+        if apk in appstate['present_vers'] and appstate['present_vers'][apk] == required_ver:
             print("It's already present on disk, so skipping download.")
         else:
             apkpure_dl(apk, apkpure_appname, required_ver,
