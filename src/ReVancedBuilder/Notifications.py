@@ -57,7 +57,7 @@ def send_notif(appstate, error=False):
                        'Title': encoded_title}
             try:
                 token = config[entry]['token']
-                headers['Authorization'] = 'Bearer' + token
+                headers['Authorization'] = 'Bearer ' + token
             except:
                 continue
             try:
