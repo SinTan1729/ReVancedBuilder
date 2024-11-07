@@ -23,3 +23,5 @@
 enabled = false
 url = url
 topic = topic
+token = token
+

@@ -56,6 +56,11 @@ def send_notif(appstate, error=False):
             headers = {'Icon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Revanced-logo-round.svg/240px-Revanced-logo-round.svg.png',
                        'Title': encoded_title}
             try:
+                token = config[entry]['token']
+                headers['Authorization'] = 'Bearer' + token
+            except:
+                continue
+            try:
                 req.post(f"{url}/{topic}", msg, headers=headers)
             except Exception as e:
                 print('Failed!' + str(e))
