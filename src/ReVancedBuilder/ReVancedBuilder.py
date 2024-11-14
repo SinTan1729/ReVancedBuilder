@@ -21,7 +21,7 @@ from ReVancedBuilder.Cleanup import move_apps, err_exit
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
-    for item in ['revanced-cli', 'revanced-integrations', 'revanced-patches']:
+    for item in ['revanced-cli', 'revanced-patches']:
         print(f"Checking updates for {item}...")
         tools = appstate['tools']
         tool = next(filter(lambda x: x['repository'] == 'revanced/'+item and x['content_type'] not in ['application/pgp-keys', 'application/json'], tools))

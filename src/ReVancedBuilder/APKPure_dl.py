@@ -96,9 +96,7 @@ def get_apks(appstate):
     # Get latest patches using the ReVanced API
     try:
         # Get the first result
-        patches_json = next(filter(
-            lambda x: x['repository'] == 'revanced/revanced-patches', appstate['tools']))
-        patches = session.get(patches_json['browser_download_url']).json()
+        patches = session.get('https://api.revanced.app/v4/patches/list').json()
     except session.exceptions.RequestException as e:
         err_exit(f"Error fetching patches, {e}", appstate)
 
@@ -123,13 +121,10 @@ def get_apks(appstate):
             hard_version = False
             compatible_vers = []
             for patch in patches:
-                if patch['compatiblePackages'] is not None:
-                    for pkg in patch['compatiblePackages']:
-                        if pkg['name'] == apk:
-                            try:
-                                compatible_vers.append(pkg['versions'][-1])
-                            except TypeError:
-                                pass
+                try:
+                    compatible_vers.append(patch['compatiblePackages'][apk][-1])
+                except (KeyError, TypeError):
+                    pass
 
             if not compatible_vers:
                 required_ver = Version('0')
