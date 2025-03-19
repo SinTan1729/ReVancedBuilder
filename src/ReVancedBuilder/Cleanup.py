@@ -13,28 +13,28 @@ from ReVancedBuilder.Notifications import send_notif
 
 
 def move_apps(appstate):
-    build_config = appstate['build_config']
-    print = appstate['logger'].info
+    build_config = appstate["build_config"]
+    print = appstate["logger"].info
 
     try:
-        os.mkdir('archive')
+        os.mkdir("archive")
     except FileExistsError:
         pass
 
     for app in build_config:
-        if not build_config[app].getboolean('build'):
+        if not build_config[app].getboolean("build"):
             continue
-        name = build_config[app]['output_name']
+        name = build_config[app]["output_name"]
         final_name = f"{name}_{appstate['timestamp']}.apk"
 
         try:
-            os.rename(name+'.apk', 'archive/'+final_name)
+            os.rename(name + ".apk", "archive/" + final_name)
         except FileNotFoundError:
             pass
             # sys.exit('There was an error moving the final apk files!')
 
         # Do some cleanup, keep only the last 3 build's worth of files and a week worth of logs
-        with os.scandir('archive') as dir:
+        with os.scandir("archive") as dir:
             files = []
             for f in dir:
                 if name in f.name:
@@ -43,10 +43,10 @@ def move_apps(appstate):
             files.reverse()
             for f in files[3:]:
                 os.remove(f)
-                print('Deleted old build '+f.name)
+                print("Deleted old build " + f.name)
 
         # Delete logs older than 7 days
-        with os.scandir('logs') as dir:
+        with os.scandir("logs") as dir:
             now = time.time()
             for f in dir:
                 if f.stat().st_ctime < now - 7 * 86400:
@@ -54,18 +54,18 @@ def move_apps(appstate):
 
 
 def err_exit(msg, appstate, code=1):
-    print = appstate['logger'].info
+    print = appstate["logger"].info
 
     try:
-        appstate['notification_config']
-        if appstate['flag'] != 'checkonly':
+        appstate["notification_config"]
+        if appstate["flag"] != "checkonly":
             send_notif(appstate, error=True)
-    except:
+    except KeyError:
         pass
 
     if msg:
         print(f"ERROR: {msg}")
 
     # Delete the lockfile
-    os.remove('lockfile')
+    os.remove("lockfile")
     sys.exit(code)
