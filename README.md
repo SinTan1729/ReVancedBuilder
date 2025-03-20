@@ -6,11 +6,11 @@ It uses [Gotify](https://gotify.net), [ntfy.sh](https://ntfy.sh) or
 Make sure that `Java >=17` is installed and selected as default.
 
 ## Installation
-Recommended way is to use [`pipx`](https://github.com/pypa/pipx) to install the program.
+Recommended way is to use [`uv`](https://github.com/astral-sh/uv) to install the program.
 ```
-pipx install git+https://github.com/SinTan1729/ReVancedBuilder
+uv tool install git+https://github.com/SinTan1729/ReVancedBuilder
 ```
-And then you can update/reinstall the program using `pipx reinstall ReVancedBuilder`.
+And then you can update/reinstall the program using `uv tool update ReVancedBuilder`.
 ## How to use
 Just run `ReVancedBuilder <working-directory> (force/experimental/checkonly/buildonly)`.
 
@@ -54,7 +54,7 @@ It might be a good idea to set it up to run periodically. There are a few ways o
     ```
 
 ## Notes
-- If you installed it using `pipx`, you can figure out the full location of the
+- If you installed it using `uv`, you can figure out the full location of the
 program by running `which ReVancedBuilder`.
 - This app needs some config files to run. Download all the config files inside
 `example_configs` directory, namely `build_config`, `chosen_patches`
