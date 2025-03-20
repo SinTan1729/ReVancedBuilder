@@ -8,7 +8,7 @@ requires-python = ">=3.6"
 keywords = ["revanced", "patch"]
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = ["cloudscraper", "requests", "packaging", "bs4"]
-version = "1.4"
+version = "1.4.0"
 
 [project.scripts]
 ReVancedBuilder = "ReVancedBuilder:ReVancedBuilder"
