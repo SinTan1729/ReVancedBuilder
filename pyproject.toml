@@ -1,7 +1,3 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "ReVancedBuilder"
 authors = [{ name = "Sayantan Santra", email = "sayantan.santra689@gmail.com" }]
