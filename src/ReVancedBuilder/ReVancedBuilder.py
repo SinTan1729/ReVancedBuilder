@@ -15,7 +15,7 @@ import requests as req
 from packaging.version import Version
 
 from ReVancedBuilder.APKPure_dl import get_apks
-from ReVancedBuilder.Cleanup import err_exit, move_apps
+from ReVancedBuilder.Cleanup import err_exit, move_apps, send_notif
 from ReVancedBuilder.JAVABuilder import build_apps
 
 
@@ -187,7 +187,7 @@ except FileNotFoundError:
     appstate["present_vers"] = json.loads("{}")
 
 appstate["up-to-date"] = True
-# send_notif(appstate, error=False) # <,,,,,,,,<,,,,,,,,,,,,,
+
 if flag != "buildonly":
     appstate = update_tools(appstate)
     appstate = update_gmscore(appstate)
@@ -217,6 +217,8 @@ elif flag != "checkonly":
         except Exception as ex:
             print(f"Got exception while running the build: '{ex}'")
             err_exit("", appstate, 0)
+
+    send_notif(appstate)
 
 # Delete the lockfile
 os.remove("lockfile")
