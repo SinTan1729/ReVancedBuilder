@@ -202,7 +202,6 @@ if (flag != "checkonly" and not appstate["up-to-date"]) or flag in ["force", "bu
 if appstate["up-to-date"] and flag != "buildonly":
     print("There's nothing to do.")
 elif flag != "checkonly":
-    err_exit("", appstate, 0)
     try:
         os.rename("versions.json", "versions-old.json")
     except FileNotFoundError:
@@ -217,6 +216,7 @@ elif flag != "checkonly":
             subprocess.run(cmd, shell=True)
         except Exception as ex:
             print(f"Got exception while running the build: '{ex}'")
+            err_exit("", appstate, 0)
 
 # Delete the lockfile
 os.remove("lockfile")
