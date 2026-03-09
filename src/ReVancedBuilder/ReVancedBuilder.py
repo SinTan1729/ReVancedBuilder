@@ -10,7 +10,6 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-
 import requests as req
 from packaging.version import Version
 
@@ -21,16 +20,21 @@ from ReVancedBuilder.JAVABuilder import build_apps
 
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
+    tools = {}
     for item in ["revanced-cli", "revanced-patches"]:
+        try:
+            data = req.get(f"https://api.github.com/repos/revanced/{item}/releases/latest").json()
+        except req.exceptions.RequestException as e:
+            err_exit(f"Error fetching information about {item}, {e}", appstate)
+        tools[item] = {
+            "version": data["tag_name"],
+            "browser_download_url": data["assets"][0]["browser_download_url"],
+            # "signature_download_url": data["assets"][1]["browser_download_url"],
+        }
+
+    for item in tools.keys():
         print(f"Checking updates for {item}...")
-        tools = appstate["tools"]
-        tool = next(
-            filter(
-                lambda x: x["repository"] == "revanced/" + item
-                and x["content_type"] not in ["application/pgp-keys", "application/json"],
-                tools,
-            )
-        )
+        tool = tools[item]
         latest_ver = Version(tool["version"])
 
         try:
@@ -38,7 +42,8 @@ def update_tools(appstate):
         except KeyError:
             present_ver = Version("0")
 
-        output_file = item + os.path.splitext(tool["name"])[1]
+        extension = tool["browser_download_url"].rsplit(".", 1)[-1]
+        output_file = f"{item}.{extension}"
         if flag == "force" or not os.path.isfile(output_file) or present_ver < latest_ver:
             appstate["up-to-date"] = False
             print(f"{item} has an update ({str(present_ver)} -> {str(latest_ver)})")
@@ -52,6 +57,7 @@ def update_tools(appstate):
                 appstate["present_vers"].update({item: str(latest_ver)})
                 print("Done!")
 
+    appstate["tools"] = tools
     return appstate
 
 
@@ -172,13 +178,7 @@ except FileNotFoundError:
 appstate["notification_config"] = cp.ConfigParser()
 appstate["notification_config"].read("notification_config")
 
-# Pull the latest information using the ReVanced API
-try:
-    tools = req.get("https://api.revanced.app/tools").json()["tools"]
-    appstate["tools"] = tools
-except req.exceptions.RequestException as e:
-    err_exit(f"Error fetching patch list, {e}", appstate)
-
+# Read current local versions
 try:
     with open("versions.json", "r") as f:
         appstate["present_vers"] = json.load(f)
