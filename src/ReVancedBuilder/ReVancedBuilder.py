@@ -21,7 +21,7 @@ from ReVancedBuilder.JAVABuilder import build_apps
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
     tools = {}
-    for item in ["revanced-cli", "revanced-patches"]:
+    for item in ["revanced-cli", "revanced-patches", "GmsCore"]:
         try:
             data = req.get(f"https://api.github.com/repos/revanced/{item}/releases/latest").json()
         except req.exceptions.RequestException as e:
@@ -61,51 +61,10 @@ def update_tools(appstate):
     return appstate
 
 
-# Update GmsCore, if needed
-def update_gmscore(appstate):
-    print("Checking updates for GmsCore...")
-    # Pull the latest information using the ReVanced API
-    try:
-        data = req.get("https://api.revanced.app/v2/gmscore/releases/latest").json()["release"]
-    except req.exceptions.RequestException as e:
-        err_exit(f"Error fetching GmsCore information, {e}", appstate)
-
-    latest_ver = Version(data["metadata"]["tag_name"])
-
-    try:
-        present_ver = Version(appstate["present_vers"]["GmsCore"])
-    except KeyError:
-        present_ver = Version("0")
-
-    try:
-        variant = appstate["build_config"]["gmscore"]["variant"]
-    except KeyError:
-        variant = "regular"
-
-    if variant == "alt":
-        gmscore_link = next(filter(lambda x: "-hw-" in x["name"], data["assets"]))[
-            "browser_download_url"
-        ]
-    else:
-        gmscore_link = next(filter(lambda x: "-hw-" not in x["name"], data["assets"]))[
-            "browser_download_url"
-        ]
-
-    if flag == "force" or not os.path.isfile("GmsCore.apk") or present_ver < latest_ver:
-        appstate["up-to-date"] = False
-        print(f"GmsCore has an update ({str(present_ver)} -> {str(latest_ver)})")
-        if flag != "checkonly":
-            print("Downloading GmsCore...")
-            res = req.get(gmscore_link, stream=True)
-            res.raise_for_status()
-            with open("GmsCore.apk", "wb") as f:
-                for chunk in res.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            appstate["present_vers"].update({"GmsCore": str(latest_ver)})
-            print("Done!")
-            appstate["gmscore_updated"] = True
-
-    return appstate
+def sync_json(appstate, need_to_build):
+    appstate["present_vers"]["need_to_build"] = need_to_build
+    with open("versions.json", "w") as f:
+        json.dump(appstate["present_vers"], f, indent=4)
 
 
 # ------------------------------
@@ -188,34 +147,39 @@ except FileNotFoundError:
 
 appstate["up-to-date"] = True
 
+need_to_build = appstate.get("present_vers", {}).get("need_to_build", False)
 if flag != "buildonly":
     appstate = update_tools(appstate)
-    appstate = update_gmscore(appstate)
-    if (not appstate["up-to-date"] and flag != "checkonly") or flag == "force":
+    if not appstate["up-to-date"] and flag != "checkonly":
+        try:
+            os.rename("versions.json", "versions-old.json")
+        except FileNotFoundError:
+            pass
+        sync_json(appstate, True)
+    if (not appstate["up-to-date"] and flag != "checkonly") or flag == "force" or need_to_build:
         appstate = get_apks(appstate)
+        sync_json(appstate, True)
 
-if (flag != "checkonly" and not appstate["up-to-date"]) or flag in ["force", "buildonly"]:
+if (
+    (flag != "checkonly" and not appstate["up-to-date"])
+    or flag in ["force", "buildonly"]
+    or need_to_build
+):
     build_apps(appstate)
     move_apps(appstate)
 
 # Update version numbers in the versions.json file
-if appstate["up-to-date"] and flag != "buildonly":
+if (appstate["up-to-date"] and flag != "buildonly") or need_to_build:
     print("There's nothing to do.")
 elif flag != "checkonly":
-    try:
-        os.rename("versions.json", "versions-old.json")
-    except FileNotFoundError:
-        pass
-
+    sync_json(appstate, False)
     if flag != "buildonly":
-        with open("versions.json", "w") as f:
-            json.dump(appstate["present_vers"], f, indent=4)
         try:
             cmd = f"{appstate['build_config']['post_script']['file']} {appstate['timestamp']}"
             print(f"Running the post command '{cmd}'")
             subprocess.run(cmd, shell=True)
         except Exception as ex:
-            print(f"Got exception while running the build: '{ex}'")
+            print(f"Got exception while running the post-command: '{ex}'")
             err_exit("", appstate, 0)
 
     send_notif(appstate)
