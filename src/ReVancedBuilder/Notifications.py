@@ -21,7 +21,7 @@ def send_notif(appstate, error=False):
         present_vers = appstate["present_vers"]
 
         msg = json.dumps(present_vers, indent=0)
-        msg = re.sub('("|\{|\}|,)', "", msg).strip("\n")
+        msg = re.sub('("|{|}|,)', "", msg).strip("\n")
 
         msg = msg.replace("revanced-", "ReVanced ")
         msg = msg.replace("cli", "CLI")
