@@ -4,10 +4,10 @@ authors = [{ name = "Sayantan Santra", email = "sayantan.santra689@gmail.com" }]
 description = "A tool to automatically build latest releases of ReVanced apps"
 license = "GPL-3.0-only"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.10"
 keywords = ["revanced", "patch"]
 classifiers = ["Programming Language :: Python :: 3"]
-dependencies = ["cloudscraper", "requests", "packaging", "bs4", "gnupg"]
+dependencies = ["cloudscraper>=1.2.71", "requests>=2.32.5", "packaging>=26.0", "bs4>=0.0.2"]
 version = "1.4.1"
 
 [build-system]
