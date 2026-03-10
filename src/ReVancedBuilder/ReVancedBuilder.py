@@ -169,7 +169,7 @@ if (
     move_apps(appstate)
 
 # Update version numbers in the versions.json file
-if (appstate["up-to-date"] and flag != "buildonly") or need_to_build:
+if appstate["up-to-date"] and flag != "buildonly" and (not need_to_build):
     print("There's nothing to do.")
 elif flag != "checkonly":
     sync_json(appstate, False)
