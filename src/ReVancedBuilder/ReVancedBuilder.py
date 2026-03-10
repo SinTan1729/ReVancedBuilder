@@ -26,10 +26,12 @@ def update_tools(appstate):
             data = req.get(f"https://api.github.com/repos/revanced/{item}/releases/latest").json()
         except req.exceptions.RequestException as e:
             err_exit(f"Error fetching information about {item}, {e}", appstate)
+        url = data["assets"][0]["browser_download_url"]
+        if item == "GmsCore":
+            url = data["assets"][1]["browser_download_url"]
         tools[item] = {
             "version": data["tag_name"],
-            "browser_download_url": data["assets"][0]["browser_download_url"],
-            # "signature_download_url": data["assets"][1]["browser_download_url"],
+            "browser_download_url": url,
         }
 
     for item in tools.keys():

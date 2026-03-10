@@ -19,8 +19,9 @@ def send_notif(appstate, error=False):
     else:
         build_config = appstate["build_config"]
         present_vers = appstate["present_vers"]
+        vers_filtered = {k: v for k, v in present_vers.items() if k != "need_to_build"}
 
-        msg = json.dumps(present_vers, indent=0)
+        msg = json.dumps(vers_filtered, indent=0)
         msg = re.sub('("|{|}|,)', "", msg).strip("\n")
 
         msg = msg.replace("revanced-", "ReVanced ")
