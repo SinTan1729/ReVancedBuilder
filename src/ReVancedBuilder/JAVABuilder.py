@@ -37,6 +37,7 @@ def build_apps(appstate):
 
         # Build the command to be run
         cmd = "java -jar revanced-cli.jar patch -p revanced-patches.rvp"
+        cmd += " -k revanced-keys.gpg -s revanced-patches.rvp.asc -a revanced-patches.rvp.sigstore.json -r revanced/revanced-patches"
 
         try:
             root = build_config[app].getboolean("root")

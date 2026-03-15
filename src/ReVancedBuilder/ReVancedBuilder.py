@@ -9,6 +9,7 @@ import logging
 import os
 import subprocess
 import sys
+import hashlib
 from datetime import datetime
 import requests as req
 from packaging.version import Version
@@ -34,11 +35,24 @@ def update_signatures(appstate):
             f.write(chunk)
 
     print("Updating the GPG signature.")
-    res = req.get("https://api.revanced.app/v5/patches/keys").json()
+    res = req.get("https://api.revanced.app/v5/patches/keys")
     res.raise_for_status()
+    data = res.json()
     key = data["patches_public_key"]
-    with open("revanced-keys.pgp", "w") as f:
+    with open("revanced-keys.gpg", "w") as f:
         f.write(key)
+
+    print("Updating the attestations.")
+    with open("revanced-patches.rvp", "rb") as f:
+        file_hash = hashlib.sha256(f.read()).hexdigest()
+    res = req.get(
+        f"https://api.github.com/repos/revanced/revanced-patches/attestations/sha256:{file_hash}"
+    )
+    res.raise_for_status()
+    data = res.json()
+    bundle = data["attestations"][0]["bundle"]
+    with open("revanced-patches.rvp.sigstore.json", "w") as f:
+        json.dump(bundle, f)
 
     print("Done!")
 
@@ -53,7 +67,7 @@ def update_tools(appstate):
             err_exit(f"Error fetching information about {item}, {e}", appstate)
 
         assets = filter(
-            lambda a: not a["browser_download_url"].endswith(".asc", "-hw-signed.apk"),
+            lambda a: not a["browser_download_url"].endswith((".asc", "-hw-signed.apk")),
             data["assets"],
         )
         url = next(assets)["browser_download_url"]
@@ -187,9 +201,9 @@ if flag != "buildonly":
         except FileNotFoundError:
             pass
         sync_json(appstate, True)
-        update_signatures(appstate)
     if (not appstate["up-to-date"] and flag != "checkonly") or flag == "force" or need_to_build:
         appstate = get_apks(appstate)
+        update_signatures(appstate)
         sync_json(appstate, True)
 
 if (
