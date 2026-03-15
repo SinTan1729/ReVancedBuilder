@@ -18,6 +18,31 @@ from ReVancedBuilder.Cleanup import err_exit, move_apps, send_notif
 from ReVancedBuilder.JAVABuilder import build_apps
 
 
+def update_signatures(appstate):
+    try:
+        data = req.get("https://api.revanced.app/v5/patches").json()
+    except req.exceptions.RequestException as e:
+        err_exit(f"Error fetching information about revanced-patches signature, {e}", appstate)
+    url = data["signature_download_url"]
+
+    output_file = "revanced-patches.rvp.asc"
+    print("Updating signature for revanced patches.")
+    res = req.get(url, stream=True)
+    res.raise_for_status()
+    with open(output_file, "wb") as f:
+        for chunk in res.iter_content(chunk_size=8192):
+            f.write(chunk)
+
+    print("Updating the GPG signature.")
+    res = req.get("https://api.revanced.app/v5/patches/keys").json()
+    res.raise_for_status()
+    key = data["patches_public_key"]
+    with open("revanced-keys.pgp", "w") as f:
+        f.write(key)
+
+    print("Done!")
+
+
 # Update the ReVanced tools, if needed
 def update_tools(appstate):
     tools = {}
@@ -26,9 +51,13 @@ def update_tools(appstate):
             data = req.get(f"https://api.github.com/repos/revanced/{item}/releases/latest").json()
         except req.exceptions.RequestException as e:
             err_exit(f"Error fetching information about {item}, {e}", appstate)
-        url = data["assets"][0]["browser_download_url"]
-        if item == "GmsCore":
-            url = data["assets"][1]["browser_download_url"]
+
+        assets = filter(
+            lambda a: not a["browser_download_url"].endswith(".asc", "-hw-signed.apk"),
+            data["assets"],
+        )
+        url = next(assets)["browser_download_url"]
+
         tools[item] = {
             "version": data["tag_name"],
             "browser_download_url": url,
@@ -158,6 +187,7 @@ if flag != "buildonly":
         except FileNotFoundError:
             pass
         sync_json(appstate, True)
+        update_signatures(appstate)
     if (not appstate["up-to-date"] and flag != "checkonly") or flag == "force" or need_to_build:
         appstate = get_apks(appstate)
         sync_json(appstate, True)
