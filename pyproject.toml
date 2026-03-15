@@ -8,7 +8,7 @@ requires-python = ">=3.10"
 keywords = ["revanced", "patch"]
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = ["cloudscraper>=1.2.71", "requests>=2.32.5", "packaging>=26.0", "bs4>=0.0.2"]
-version = "1.4.2"
+version = "1.4.3"
 
 [build-system]
 requires = ["hatchling"]
