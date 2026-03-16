@@ -23,3 +23,6 @@ only-include = ["src"]
 [project.scripts]
 ReVancedBuilder = "ReVancedBuilder:ReVancedBuilder"
 
+[project.urls]
+homepage = "https://github.com/SinTan1729/ReVancedBuilder"
+
