@@ -1,13 +1,16 @@
-#!/usr/bin/env python3\
+#!/usr/bin/env python3
 
 # SPDX-FileCopyrightText: 2023 Sayantan Santra <sayantan.santra689@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-only
 
 import os
+import re
 
 import cloudscraper as scraper
 from bs4 import BeautifulSoup as bs
 from packaging.version import Version
+from subprocess import check_output
+
 
 from ReVancedBuilder.Cleanup import err_exit
 
@@ -35,9 +38,11 @@ def apkpure_best_match(version, soup, appstate, apk):
 
 
 def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag, appstate):
-    res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
-    res.raise_for_status()
-    soup = bs(res.text, "html.parser")
+    try:
+        res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
+        soup = bs(res.text, "html.parser")
+    except Exception as ex:
+        err_exit(f"Could not get list of available versions from APKPure.: {ex}")
 
     try:
         if present_vers[apk] == version and flag != "force" and os.path.isfile(apk + ".apk"):
@@ -50,9 +55,13 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag,
         apkpure_version = apkpure_best_match(version, soup, appstate, apk)
         if version not in [apkpure_version, "0"]:
             print(
-                f"Required version {version} not found in APKPure, choosing version {apkpure_version} instead."
+                f"Required version {version} for {apk} not found in APKPure.\n",
+                "This may happen due to IP blocking, or many other reasons.\n",
+                f"Please download manually and put it as {apk}.apk inside the build directory.\n",
+                "Try APKMirror, and make sure that it's not a split xapk file.\n",
+                "Also update the versions.json file before retrying.",
             )
-        version = apkpure_version
+            err_exit(f"Could not download the required version for {apk}.", appstate)
         try:
             if present_vers[apk] == version and flag != "force" and os.path.isfile(apk + ".apk"):
                 print(f"Recommended version {version} of {apk} is already present.")
@@ -82,6 +91,48 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag,
     print("    Done!")
 
 
+# Parse patches output to JSON
+def parse_patches(data):
+    res = []
+
+    for block in re.split(r"\n\s*\n", data.strip()):
+        d = {
+            "name": None,
+            "compatible_packages": [],
+        }
+
+        pkg = None
+
+        for line in block.splitlines():
+            s = line.strip()
+
+            if s.startswith("Name:"):
+                d["name"] = s.split(":", 1)[1].strip()
+
+            elif s.startswith("Package name:"):
+                if pkg:
+                    d["compatible_packages"].append(pkg)
+                pkg = {"package_name": s.split(":", 1)[1].strip(), "compatible_versions": []}
+
+            elif line.startswith("\t\t") and pkg:
+                pkg["compatible_versions"].append(s)
+
+        if pkg:
+            d["compatible_packages"].append(pkg)
+
+        # normalize → nulls
+        if not d["compatible_packages"]:
+            d["compatible_packages"] = None
+        else:
+            for p in d["compatible_packages"]:
+                if not p["compatible_versions"]:
+                    p["compatible_versions"] = None
+
+        res.append(d)
+
+    return res
+
+
 # Download apk files, if needed
 def get_apks(appstate):
     present_vers = appstate["present_vers"]
@@ -93,12 +144,24 @@ def get_apks(appstate):
     # Create a cloudscraper session
     session = scraper.create_scraper()
 
-    # Get latest patches using the ReVanced API
+    # Get latest patches from the patches file
     try:
-        # Get the first result
-        patches = session.get("https://api.revanced.app/v4/patches/list").json()
-    except session.exceptions.RequestException as e:
-        err_exit(f"Error fetching patches, {e}", appstate)
+        patches = check_output(
+            [
+                "java",
+                "-jar",
+                "revanced-cli.jar",
+                "list-patches",
+                "-bp",
+                "revanced-patches.rvp",
+                "--packages",
+                "--versions",
+            ],
+            text=True,
+        )
+        patches = parse_patches(patches)
+    except Exception as ex:
+        err_exit(f"Error fetching patches, {ex}", appstate)
 
     for app in build_config:
         # Check if we need to build an app
@@ -116,21 +179,29 @@ def get_apks(appstate):
         try:
             required_ver = build_config[app]["version"]
             hard_version = True
-            print(f"Using version {required_ver} of {apk} from build_config.")
-        except Exception as ex:
-            print(f"Dealing with exception: {ex}")
+            # print(f"Using version {required_ver} of {apk} from build_config.")
+        except KeyError:
+            print("Trying to choose version.")
             hard_version = False
-            compatible_vers = []
-            for patch in patches:
-                try:
-                    compatible_vers.append(patch["compatiblePackages"][apk][-1])
-                except (KeyError, TypeError):
-                    pass
+            version_sets = []
+            for item in patches or []:
+                for pkg in item.get("compatible_packages") or []:
+                    if not pkg:
+                        continue
+                    if pkg.get("package_name") != apk:
+                        continue
+                    versions = set(
+                        v for v in (pkg.get("compatible_versions") or []) if v is not None
+                    )
+                    if versions:  # only keep non-empty sets
+                        version_sets.append(versions)
+
+            compatible_vers = set.intersection(*version_sets) if version_sets else set()
 
             if not compatible_vers:
                 required_ver = Version("0")
             else:
-                required_ver = min(map(lambda x: Version(x), compatible_vers))
+                required_ver = max(map(lambda x: Version(x), compatible_vers))
                 required_ver = next(filter(lambda x: Version(x) == required_ver, compatible_vers))
 
             print(f"Chosen required version of {apk} is {required_ver}.")
