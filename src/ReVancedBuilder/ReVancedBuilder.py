@@ -121,7 +121,7 @@ appstate = {}
 
 # Get a timestamp
 time = datetime.now()
-appstate["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+appstate["timestamp"] = time.strftime("%Y-%m-%dT%H-%M-%SZ")
 
 # Read arguments
 try:
