@@ -120,7 +120,6 @@ def parse_patches(data):
         if pkg:
             d["compatible_packages"].append(pkg)
 
-        # normalize → nulls
         if not d["compatible_packages"]:
             d["compatible_packages"] = None
         else:
