@@ -11,12 +11,12 @@ from packaging.version import Version
 from subprocess import check_output
 
 
-from ReVancedBuilder.Cleanup import err_exit
+from utils.Cleanup import err_exit
 
 # Determine the best version available to download
 
 
-def apkpure_best_match(version, soup, appstate, apk):
+def apkpure_best_match(version, soup, appstate, apk) -> str:
     try:
         vers_list_str = [
             x["data-dt-version"] for x in soup.css.select('a[data-dt-apkid^="b/APK/"]')
@@ -36,7 +36,7 @@ def apkpure_best_match(version, soup, appstate, apk):
 # Download an apk from apkpure.net
 
 
-def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag, appstate):
+def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag, appstate) -> None:
     try:
         res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
         soup = bs(res.text, "html.parser")
@@ -91,7 +91,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag,
 
 
 # Parse patches output to JSON
-def parse_patches(data):
+def parse_patches(data) -> list[dict]:
     res = []
 
     for block in re.split(r"\n\s*\n", data.strip()):
@@ -136,7 +136,7 @@ def parse_patches(data):
 
 
 # Download apk files, if needed
-def get_apks(appstate):
+def get_apks(appstate) -> dict:
     present_vers = appstate["present_vers"]
     build_config = appstate["build_config"]
     flag = appstate["flag"]

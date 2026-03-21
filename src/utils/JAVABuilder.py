@@ -8,12 +8,12 @@ import json
 import os
 import subprocess
 
-from ReVancedBuilder.Cleanup import err_exit
+from utils.Cleanup import err_exit
 
 # Build the revanced apps
 
 
-def build_apps(appstate):
+def build_apps(appstate) -> None:
     build_config = appstate["build_config"]
     flag = appstate["flag"]
     print = appstate["logger"].info

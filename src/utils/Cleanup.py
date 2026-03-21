@@ -7,12 +7,12 @@ import os
 import sys
 import time
 
-from ReVancedBuilder.Notifications import send_notif
+from utils.Notifications import send_notif
 
 # Move apps to proper location
 
 
-def move_apps(appstate):
+def move_apps(appstate) -> None:
     build_config = appstate["build_config"]
     print = appstate["logger"].info
 
@@ -53,7 +53,7 @@ def move_apps(appstate):
                     os.remove(f)
 
 
-def err_exit(msg, appstate, code=1):
+def err_exit(msg, appstate, code=1) -> None:
     print = appstate["logger"].info
 
     try:
