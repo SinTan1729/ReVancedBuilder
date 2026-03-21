@@ -2,7 +2,6 @@
 
 # SPDX-FileCopyrightText: 2023 Sayantan Santra <sayantan.santra689@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-only
-
 import os
 import re
 
@@ -42,7 +41,7 @@ def apkpure_dl(apk, appname, version, hard_version, session, present_vers, flag,
         res = session.get(f"https://apkpure.com/{appname}/{apk}/versions")
         soup = bs(res.text, "html.parser")
     except Exception as ex:
-        err_exit(f"Could not get list of available versions from APKPure.: {ex}")
+        err_exit(f"Could not get list of available versions from APKPure.: {ex}", appstate, 1)
 
     try:
         if present_vers[apk] == version and flag != "force" and os.path.isfile(apk + ".apk"):
@@ -96,7 +95,7 @@ def parse_patches(data):
     res = []
 
     for block in re.split(r"\n\s*\n", data.strip()):
-        d = {
+        d: dict[str, str | list[dict] | None] = {
             "name": None,
             "compatible_packages": [],
         }
@@ -112,9 +111,13 @@ def parse_patches(data):
             elif s.startswith("Package name:"):
                 if pkg:
                     d["compatible_packages"].append(pkg)
-                pkg = {"package_name": s.split(":", 1)[1].strip(), "compatible_versions": []}
+                pkg: dict[str, list[str] | str] = {
+                    "package_name": s.split(":", 1)[1].strip(),
+                    "compatible_versions": [],
+                }
 
             elif line.startswith("\t\t") and pkg:
+                assert isinstance(pkg["compatible_versions"], list)
                 pkg["compatible_versions"].append(s)
 
         if pkg:
@@ -145,7 +148,7 @@ def get_apks(appstate):
 
     # Get latest patches from the patches file
     try:
-        patches = check_output(
+        raw_patches = check_output(
             [
                 "java",
                 "-jar",
@@ -158,7 +161,7 @@ def get_apks(appstate):
             ],
             text=True,
         )
-        patches = parse_patches(patches)
+        patches = parse_patches(raw_patches)
     except Exception as ex:
         err_exit(f"Error fetching patches, {ex}", appstate)
 

@@ -79,8 +79,9 @@ def build_apps(appstate):
         try:
             with subprocess.Popen(
                 cmd, shell=True, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-            ).stdout as output:
-                for line in output:
+            ) as proc:
+                assert proc.stdout is not None
+                for line in proc.stdout:
                     line_utf = line.decode("utf-8").strip("\n")
                     if line_utf:
                         print(line_utf)
