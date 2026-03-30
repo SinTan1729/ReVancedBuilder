@@ -56,15 +56,15 @@ def move_apps(appstate) -> None:
 def err_exit(msg, appstate, code=1) -> None:
     print = appstate["logger"].info
 
+    if msg:
+        print(f"ERROR: {msg}")
+
     try:
         appstate["notification_config"]
         if appstate["flag"] != "checkonly":
-            send_notif(appstate, error=True)
+            send_notif(appstate, msg or "", error=True)
     except KeyError:
         pass
-
-    if msg:
-        print(f"ERROR: {msg}")
 
     # Delete the lockfile
     os.remove("lockfile")

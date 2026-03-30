@@ -10,12 +10,12 @@ import subprocess
 import requests as req
 
 
-def send_notif(appstate, error=False) -> None:
+def send_notif(appstate, msg, error=False) -> None:
     print = appstate["logger"].info
     timestamp = appstate["timestamp"]
 
     if error:
-        msg = f"There was an error during build! Please check the logs.\nTimestamp: {timestamp}"
+        msg = f"There was an error during build!\n> {msg}\nCheck logs for further information.\nTimestamp: {timestamp}"
     else:
         build_config = appstate["build_config"]
         present_vers = appstate["present_vers"]

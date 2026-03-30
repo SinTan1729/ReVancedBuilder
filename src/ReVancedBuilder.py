@@ -63,14 +63,14 @@ def update_tools(appstate) -> dict:
     for item in ["revanced-cli", "revanced-patches", "GmsCore"]:
         try:
             data = req.get(f"https://api.github.com/repos/revanced/{item}/releases/latest").json()
-        except req.exceptions.RequestException as e:
-            err_exit(f"Error fetching information about {item}, {e}", appstate)
 
-        assets = filter(
-            lambda a: not a["browser_download_url"].endswith((".asc", "-hw-signed.apk")),
-            data["assets"],
-        )
-        url = next(assets)["browser_download_url"]
+            assets = filter(
+                lambda a: not a["browser_download_url"].endswith((".asc", "-hw-signed.apk")),
+                data["assets"],
+            )
+            url = next(assets)["browser_download_url"]
+        except (req.RequestException, KeyError) as e:
+            err_exit(f"Error fetching information about {item}, {e}", appstate)
 
         tools[item] = {
             "version": data["tag_name"],
