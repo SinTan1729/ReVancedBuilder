@@ -10,7 +10,7 @@ Make sure that `Java >=17` is installed and selected as default.
 
 Recommended way is to use [`uv`](https://github.com/astral-sh/uv) to install the program.
 
-```
+```bash
 uv tool install ReVancedBuilder
 ```
 
@@ -24,12 +24,12 @@ It might be a good idea to set it up to run periodically. There are a few ways o
 
 1. Just drop it inside `/etc/cron.daily/`.
 1. To make it run at a specific time (6AM in the example) using `cron`, put this in your `crontab`:
-   ```
+   ```cron
    0 6 * * * <program-full-location> <full-working-directory-location>
    ```
 1. The exact same thing as in 2 can be achieved using `systemd` timers instead. Create the following files.
 
-   ```
+   ```ini
    /etc/systemd/system/revanced-builder.service
    ---------------------------------------------
    [Unit]
@@ -45,7 +45,7 @@ It might be a good idea to set it up to run periodically. There are a few ways o
    ExecStart=<program-full-location> <full-working-directory-location>
    ```
 
-   ```
+   ```ini
    /etc/systemd/system/revanced-builder.timer
    -------------------------------------------
    [Unit]
@@ -60,7 +60,7 @@ It might be a good idea to set it up to run periodically. There are a few ways o
 
    and then enable the timer using
 
-   ```
+   ```bash
    sudo systemctl enable --now revanced-builder.timer
    ```
 
