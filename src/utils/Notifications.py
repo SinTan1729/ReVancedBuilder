@@ -10,7 +10,7 @@ import subprocess
 import requests as req
 
 
-def send_notif(appstate, msg, error=False) -> None:
+def send_notif(appstate, msg="", error=False) -> None:
     print = appstate["logger"].info
     timestamp = appstate["timestamp"]
 
